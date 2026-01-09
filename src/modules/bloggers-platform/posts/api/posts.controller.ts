@@ -5,50 +5,70 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  NotFoundException,
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import PostsService from '../application/posts.service';
 import { CreatePostDto } from '../dto/create-post.dto';
+import { PostViewDto } from './post-view.dto';
+import PostsQueryRepository from '../infra/posts.query-repository';
+import { PostsQueryParams } from './posts.query-params';
+
+let requestCounter = 0;
 
 @Controller('posts')
 class PostsController {
-  constructor(private readonly postsService: PostsService) {}
-
-  @Get(':postId/comments')
-  @HttpCode(HttpStatus.OK)
-  getCommentsForPost(@Param('postId') postId: string) {
-    return this.postsService.findByPostId(postId);
-  }
+  constructor(
+    private readonly postsService: PostsService,
+    private readonly postQueryRepository: PostsQueryRepository,
+  ) {}
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  getAllPosts() {
-    return this.postsService.findAll();
+  async getAllPosts(@Query() query: PostsQueryParams) {
+    requestCounter++;
+    console.log(`Request #${requestCounter} - GET /posts`, query);
+    return await this.postQueryRepository.getAll(query);
+  }
+
+  @Get(':id')
+  @HttpCode(HttpStatus.OK)
+  async getPostById(@Param('id') id: string) {
+    return await this.postQueryRepository.getByIdOrNotFoundFail(id);
+  }
+
+  @Get(':postId/comments')
+  @HttpCode(HttpStatus.OK)
+  async getCommentsForPost(@Param('postId') postId: string) {
+    return await this.postQueryRepository.getByIdOrNotFoundFail(postId);
   }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  createPost(@Body() dto: CreatePostDto) {
-    return this.postsService.create(dto);
-  }
-  @Get(':id')
-  @HttpCode(HttpStatus.OK)
-  getPostById(@Param('id') id: string) {
-    return this.postsService.findById(id);
+  async createPost(@Body() dto: CreatePostDto) {
+    const post = await this.postsService.create(dto);
+    return PostViewDto.mapToView(post);
   }
 
   @Put(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  updatePost(@Param('id') id: string, @Body() dto: CreatePostDto) {
-    return this.postsService.update(id, dto);
+  async updatePost(@Param('id') id: string, @Body() dto: CreatePostDto) {
+    const updatedPost = await this.postsService.update(id, dto);
+    if (!updatedPost) {
+      throw new NotFoundException(`Post not found`);
+    }
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  deletePost(@Param('id') id: string) {
-    return this.postsService.delete(id);
+  async deletePost(@Param('id') id: string) {
+    const deletedPost = await this.postsService.delete(id);
+    if (!deletedPost) {
+      throw new NotFoundException(`Post not found`);
+    }
   }
 }
 

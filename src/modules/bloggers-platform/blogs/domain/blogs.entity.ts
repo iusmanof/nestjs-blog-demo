@@ -3,31 +3,29 @@ import { HydratedDocument, Model } from 'mongoose';
 
 @Schema({ timestamps: { createdAt: true, updatedAt: false } })
 export class Blog {
-  @Prop({ type: String, maxLength: 15, required: true })
+  @Prop({ type: String, required: true, maxlength: 15 })
   name: string;
 
-  @Prop({ type: String, maxLength: 500, required: true })
+  @Prop({ type: String, required: true, maxlength: 500 })
   description: string;
 
-  @Prop({
-    type: String,
-    maxLength: 100,
-    required: true,
-    match: [
-      /^https:\/\/([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$/,
-      'Website URL must be a valid HTTPS URL',
-    ],
-  })
+  @Prop({ type: String, required: true })
   websiteUrl: string;
 
-  createdAt: string;
+  @Prop({ type: Boolean, default: false })
+  isMembership: boolean;
 
-  // get id() {
-  //   return this._id.toString();
-  // }
+  createdAt: Date;
 }
 
+// создаёт mongoose-схему на основе класса
 export const BlogSchema = SchemaFactory.createForClass(Blog);
+
+// регистрирует методы (если они есть) в схеме mongoose
 BlogSchema.loadClass(Blog);
+
+// Типизация документа (экземпляр из БД)
 export type BlogDocument = HydratedDocument<Blog>;
+
+// Типизация модели (Model + статические методы класса)
 export type BlogModelType = Model<BlogDocument> & typeof Blog;

@@ -6,6 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 import { BloggersPlatformModule } from './modules/bloggers-platform/bloggers-platform.module';
 import { UserAccountsModule } from './modules/user-accounts/user-accounts.module';
+import { TestingModule } from './testing/testing.module';
 
 @Module({
   imports: [
@@ -14,12 +15,13 @@ import { UserAccountsModule } from './modules/user-accounts/user-accounts.module
     }),
     MongooseModule.forRoot(process.env.MONGODB_URL as string, {
       connectionFactory: (connection: Connection): Connection => {
-        console.log('✅ MongoDB connected to:', connection.name);
+        console.log('MongoDB connected to:', connection.name);
         return connection;
       },
     }),
     BloggersPlatformModule,
     UserAccountsModule,
+    TestingModule,
   ],
   controllers: [AppController],
   providers: [AppService],

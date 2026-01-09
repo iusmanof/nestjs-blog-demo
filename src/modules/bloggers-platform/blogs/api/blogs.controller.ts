@@ -5,38 +5,70 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  NotFoundException,
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
-import { BlogsService } from '../application/blogs.service';
+import BlogsService from '../application/blogs.service';
 import { CreateBlogDto } from '../dto/create-blog.dto';
 import { CreatePostForBlogDto } from '../dto/create-post-for-blog.dto';
+import BlogsQueryRepository from '../infra/blogs.query-repository';
+import { BlogsQueryParams } from './blogs-query.params';
+import PostsQueryRepository from '../../posts/infra/posts.query-repository';
 import PostsService from '../../posts/application/posts.service';
+import { PostsQueryParams } from '../../posts/api/posts.query-params';
 
 @Controller('blogs')
 class BlogsController {
   constructor(
     private readonly blogsService: BlogsService,
     private readonly postsService: PostsService,
+    private readonly postQueryRepository: PostsQueryRepository,
+    private readonly blogQueryRepository: BlogsQueryRepository,
   ) {}
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  getAllBlogs() {
-    return this.blogsService.findAll();
+  getAllBlogs(@Query() query: BlogsQueryParams) {
+    return this.blogQueryRepository.getAll(query);
   }
-
+  @Get(':id')
+  @HttpCode(HttpStatus.OK)
+  getBlogById(@Param('id') id: string) {
+    return this.blogQueryRepository.getByIdOrNotFoundFail(id);
+  }
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  createBlog(@Body() dto: CreateBlogDto) {
-    return this.blogsService.create(dto);
+  async createBlog(@Body() dto: CreateBlogDto) {
+    return await this.blogsService.create(dto);
+  }
+  @Put(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async updateBlog(@Param('id') id: string, @Body() dto: CreateBlogDto) {
+    const updatedBlog = await this.blogsService.update(id, dto);
+    if (!updatedBlog) {
+      throw new NotFoundException('Blog not found');
+    }
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteBlog(@Param('id') id: string) {
+    const deletedBlog = await this.blogsService.delete(id);
+    if (!deletedBlog) {
+      throw new NotFoundException('Blog not found');
+    }
   }
 
   @Get(':blogId/posts')
   @HttpCode(HttpStatus.OK)
-  getAllPostsForBlog(@Param('blogId') blogId: string) {
-    return this.postsService.findByBlogId(blogId);
+  getAllPostsForBlog(
+    @Param('blogId') blogId: string,
+    @Query() query: PostsQueryParams,
+  ) {
+    return this.postQueryRepository.getPostsForBlog(blogId, query);
   }
 
   @Post(':blogId/posts')
@@ -46,24 +78,6 @@ class BlogsController {
     @Body() dto: CreatePostForBlogDto,
   ) {
     return this.postsService.createForBlog(blogId, dto);
-  }
-
-  @Get(':id')
-  @HttpCode(HttpStatus.OK)
-  getBlogById(@Param('id') id: string) {
-    return this.blogsService.getById(id);
-  }
-
-  @Put(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  updateBlog(@Param('id') id: string, @Body() dto: CreateBlogDto) {
-    return this.blogsService.update(id, dto);
-  }
-
-  @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  deleteBlog(@Param('id') id: string) {
-    return this.blogsService.delete(id);
   }
 }
 

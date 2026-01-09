@@ -1,32 +1,23 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from '../dto/create-user.dto';
+import UsersRepository from '../infra/users.repository';
+import { UserDocument } from '../domain/user.entity';
 
 @Injectable()
-class UserService {
-  findAll() {
-    return {
-      pagesCount: 0,
-      page: 0,
-      pageSize: 0,
-      totalCount: 0,
-      items: [
-        {
-          id: 'string',
-          login: 'string',
-          email: 'string',
-          createdAt: '2026-01-06T11:36:13.731Z',
-        },
-      ],
-    };
+class UsersService {
+  constructor(private readonly usersRepository: UsersRepository) {}
+
+  async create(dto: CreateUserDto): Promise<UserDocument> {
+    return await this.usersRepository.create(dto);
   }
 
-  create(dto: CreateUserDto) {
-    return `${dto.login}`;
-  }
+  async delete(id: string): Promise<void> {
+    const isDeleted = await this.usersRepository.delete(id);
 
-  delete(id: string) {
-    return `dto/${id}`;
+    if (!isDeleted) {
+      throw new NotFoundException();
+    }
   }
 }
 
-export default UserService;
+export default UsersService;
