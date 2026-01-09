@@ -30,6 +30,7 @@ class PostsController {
   @HttpCode(HttpStatus.OK)
   async getAllPosts(@Query() query: PostsQueryParams) {
     requestCounter++;
+
     console.log(`Request #${requestCounter} - GET /posts`, query);
     return await this.postQueryRepository.getAll(query);
   }
