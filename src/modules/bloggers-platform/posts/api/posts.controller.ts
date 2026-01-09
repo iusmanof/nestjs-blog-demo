@@ -17,8 +17,6 @@ import { PostViewDto } from './post-view.dto';
 import PostsQueryRepository from '../infra/posts.query-repository';
 import { PostsQueryParams } from './posts.query-params';
 
-let requestCounter = 0;
-
 @Controller('posts')
 class PostsController {
   constructor(
@@ -29,9 +27,6 @@ class PostsController {
   @Get()
   @HttpCode(HttpStatus.OK)
   async getAllPosts(@Query() query: PostsQueryParams) {
-    requestCounter++;
-
-    console.log(`Request #${requestCounter} - GET /posts`, query);
     return await this.postQueryRepository.getAll(query);
   }
 

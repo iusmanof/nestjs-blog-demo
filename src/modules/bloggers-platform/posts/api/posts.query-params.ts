@@ -4,6 +4,7 @@ import { IsEnum, IsOptional } from 'class-validator';
 export enum PostsSortBy {
   CreatedAt = 'createdAt',
   Title = 'title',
+  BlogName = 'blogName',
 }
 
 export class PostsQueryParams extends BaseQueryParams {
