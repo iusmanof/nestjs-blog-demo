@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { CreatePostDto } from '../dto/create-post.dto';
+import { CreatePostDto } from '../api/input-dto/create-post.dto';
 import { PostDocument } from '../domain/posts.entity';
 import PostsRepository from '../infra/posts.repository';
-import { CreatePostForBlogDto } from '../../blogs/dto/create-post-for-blog.dto';
+import { CreatePostForBlogDto } from '../api/input-dto/create-post-for-blog.dto';
 import BlogsQueryRepository from '../../blogs/infra/blogs.query-repository';
-import { PostViewDto } from '../api/post-view.dto';
+import { PostViewDto } from '../api/view-dto/post-view.dto';
 
 @Injectable()
 class PostsService {

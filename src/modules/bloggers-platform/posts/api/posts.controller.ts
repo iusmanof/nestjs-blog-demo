@@ -12,10 +12,10 @@ import {
   Query,
 } from '@nestjs/common';
 import PostsService from '../application/posts.service';
-import { CreatePostDto } from '../dto/create-post.dto';
-import { PostViewDto } from './post-view.dto';
+import { CreatePostDto } from './input-dto/create-post.dto';
+import { PostViewDto } from './view-dto/post-view.dto';
 import PostsQueryRepository from '../infra/posts.query-repository';
-import { PostsQueryParams } from './posts.query-params';
+import { PostsQueryParamsDto } from './input-dto/posts-query-params.dto';
 
 @Controller('posts')
 class PostsController {
@@ -26,7 +26,7 @@ class PostsController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  async getAllPosts(@Query() query: PostsQueryParams) {
+  async getAllPosts(@Query() query: PostsQueryParamsDto) {
     return await this.postQueryRepository.getAll(query);
   }
 

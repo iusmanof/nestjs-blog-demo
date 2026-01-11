@@ -1,4 +1,4 @@
-import { ExtendedLikesInfo, PostDocument } from '../domain/posts.entity';
+import { ExtendedLikesInfo, PostDocument } from '../../domain/posts.entity';
 
 export class PostViewDto {
   id: string;

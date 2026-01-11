@@ -2,10 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Blog, BlogDocument } from '../domain/blogs.entity';
 import { Model } from 'mongoose';
-import { BlogsQueryParams } from '../api/blogs-query.params';
-import { BlogViewDto } from '../dto/blog-view.dto';
-import { BlogPaginatedViewDto } from '../dto/blog-paginated.view.dto';
+import { BlogViewDto } from '../api/view-dto/blog-view.dto';
+import { BlogPaginatedViewDto } from '../api/view-dto/blog-paginated.view.dto';
 import { SortDirection } from '../../../../core/dto/base.query-params.dto';
+import { BlogsQueryParamsDto } from '../api/input-dto/blogs-query-params.dto';
 
 @Injectable()
 class BlogQueryRepository {
@@ -14,11 +14,12 @@ class BlogQueryRepository {
     private readonly blogModel: Model<BlogDocument>,
   ) {}
 
-  async getAll(query: BlogsQueryParams) {
-    const filter: any = {};
+  async getAll(query: BlogsQueryParamsDto) {
+    const filter = {};
 
     if (query.searchNameTerm) {
-      filter.name = { $regex: query.searchNameTerm, $options: 'i' };
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      filter.name = { $regex: query.searchNameTerm, $options: 'i' } as any;
     }
 
     const totalCount = await this.blogModel.countDocuments(filter);

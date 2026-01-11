@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateUserDto } from '../dto/create-user.dto';
+import { CreateUserDto } from '../api/input-dto/create-user.dto';
 import UsersRepository from '../infra/users.repository';
 import { UserDocument } from '../domain/user.entity';
 

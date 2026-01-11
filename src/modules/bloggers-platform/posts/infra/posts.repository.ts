@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { Post, PostDocument } from '../domain/posts.entity';
 import { InjectModel } from '@nestjs/mongoose';
-import { CreatePostDto } from '../dto/create-post.dto';
-import { CreatePostForBlogDto } from '../../blogs/dto/create-post-for-blog.dto';
+import { CreatePostDto } from '../api/input-dto/create-post.dto';
+import { CreatePostForBlogDto } from '../api/input-dto/create-post-for-blog.dto';
 import BlogsQueryRepository from '../../blogs/infra/blogs.query-repository';
 
 @Injectable()

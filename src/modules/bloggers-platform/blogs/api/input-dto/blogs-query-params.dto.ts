@@ -1,4 +1,4 @@
-import { BaseQueryParams } from '../../../../core/dto/base.query-params.dto';
+import { BaseQueryParams } from '../../../../../core/dto/base.query-params.dto';
 import { IsEnum, IsOptional, IsString } from 'class-validator';
 
 export enum BlogsSortBy {
@@ -6,7 +6,7 @@ export enum BlogsSortBy {
   Name = 'name',
 }
 
-export class BlogsQueryParams extends BaseQueryParams {
+export class BlogsQueryParamsDto extends BaseQueryParams {
   @IsEnum(BlogsSortBy)
   @IsOptional()
   sortBy: BlogsSortBy = BlogsSortBy.CreatedAt;

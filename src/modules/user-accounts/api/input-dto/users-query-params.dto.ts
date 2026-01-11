@@ -1,5 +1,5 @@
 import { IsEnum, IsOptional, IsString } from 'class-validator';
-import { BaseQueryParams } from '../../../core/dto/base.query-params.dto';
+import { BaseQueryParams } from '../../../../core/dto/base.query-params.dto';
 
 export enum UsersSortBy {
   CreatedAt = 'createdAt',
@@ -7,7 +7,7 @@ export enum UsersSortBy {
   Email = 'email',
 }
 
-export class UsersQueryParams extends BaseQueryParams {
+export class UsersQueryParamsDto extends BaseQueryParams {
   @IsEnum(UsersSortBy)
   @IsOptional()
   sortBy: UsersSortBy = UsersSortBy.CreatedAt;

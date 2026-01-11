@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from '../domain/user.entity';
-import { UserViewDto } from '../api/user-view.dto';
-import { UsersQueryParams } from '../api/users-query.params';
-import { UserPaginatedViewDto } from '../api/user-paginated.view.dto';
+import { UserViewDto } from '../api/view-dto/user-view.dto';
+import { UsersQueryParamsDto } from '../api/input-dto/users-query-params.dto';
+import { UserPaginatedViewDto } from '../dto/user-paginated.view.dto';
 import { SortDirection } from '../../../core/dto/base.query-params.dto';
 
 @Injectable()
@@ -14,7 +14,7 @@ export class UsersQueryRepository {
     private readonly userModel: Model<UserDocument>,
   ) {}
 
-  async getAll(query: UsersQueryParams) {
+  async getAll(query: UsersQueryParamsDto) {
     const filter: any = {};
     const orConditions: any[] = [];
 
@@ -26,20 +26,24 @@ export class UsersQueryRepository {
 
     if (query.searchEmailTerm) {
       orConditions.push({
-        email: { $regex: query.searchEmailTerm, $options: 'i' },
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        email: { $regex: query.searchEmailTerm, $options: 'i' } as any,
       });
     }
 
     if (orConditions.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       filter.$or = orConditions;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const totalCount = await this.userModel.countDocuments(filter);
 
     const sortField = query.sortBy || 'createdAt';
     const sortOrder = query.sortDirection === SortDirection.Asc ? 1 : -1;
 
     const users = await this.userModel
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       .find(filter)
       .sort({ [sortField]: sortOrder, _id: 1 })
       .skip(query.calculateSkip())

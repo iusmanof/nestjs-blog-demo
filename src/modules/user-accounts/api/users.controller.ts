@@ -10,10 +10,10 @@ import {
   Query,
 } from '@nestjs/common';
 import UsersService from '../application/users.service';
-import { CreateUserDto } from '../dto/create-user.dto';
+import { CreateUserDto } from './input-dto/create-user.dto';
 import { UsersQueryRepository } from '../infra/users.query-repository';
-import { UsersQueryParams } from './users-query.params';
-import { UserViewDto } from './user-view.dto';
+import { UsersQueryParamsDto } from './input-dto/users-query-params.dto';
+import { UserViewDto } from './view-dto/user-view.dto';
 
 @Controller('users')
 class UserController {
@@ -24,7 +24,7 @@ class UserController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  getAllUsers(@Query() query: UsersQueryParams) {
+  getAllUsers(@Query() query: UsersQueryParamsDto) {
     return this.usersQueryRepository.getAll(query);
   }
 

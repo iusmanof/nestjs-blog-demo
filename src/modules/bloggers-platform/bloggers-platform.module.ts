@@ -12,6 +12,7 @@ import PostsRepository from './posts/infra/posts.repository';
 import PostsQueryRepository from './posts/infra/posts.query-repository';
 import { UserAccountsModule } from '../user-accounts/user-accounts.module';
 
+// Регистрируем провайдеры всех сущностей блоггерской платформы (blogs, posts, comments, etc...)
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Blog.name, schema: BlogSchema }]),

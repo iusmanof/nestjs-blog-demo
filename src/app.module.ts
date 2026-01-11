@@ -7,6 +7,8 @@ import { Connection } from 'mongoose';
 import { BloggersPlatformModule } from './modules/bloggers-platform/bloggers-platform.module';
 import { UserAccountsModule } from './modules/user-accounts/user-accounts.module';
 import { TestingModule } from './testing/testing.module';
+import { NotificationModule } from './modules/notification/notification.module';
+import { CoreModule } from './core/core.module';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { TestingModule } from './testing/testing.module';
     BloggersPlatformModule,
     UserAccountsModule,
     TestingModule,
+    NotificationModule,
+    CoreModule,
   ],
   controllers: [AppController],
   providers: [AppService],

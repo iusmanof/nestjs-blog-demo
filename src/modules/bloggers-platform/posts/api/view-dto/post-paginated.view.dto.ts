@@ -1,4 +1,4 @@
-import { PostViewDto } from '../../posts/api/post-view.dto';
+import { PostViewDto } from './post-view.dto';
 
 export class PostPaginatedViewDto {
   items: PostViewDto[];

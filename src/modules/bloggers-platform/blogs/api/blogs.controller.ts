@@ -12,13 +12,13 @@ import {
   Query,
 } from '@nestjs/common';
 import BlogsService from '../application/blogs.service';
-import { CreateBlogDto } from '../dto/create-blog.dto';
-import { CreatePostForBlogDto } from '../dto/create-post-for-blog.dto';
+import { CreateBlogDto } from './input-dto/create-blog.dto';
+import { CreatePostForBlogDto } from '../../posts/api/input-dto/create-post-for-blog.dto';
 import BlogsQueryRepository from '../infra/blogs.query-repository';
-import { BlogsQueryParams } from './blogs-query.params';
 import PostsQueryRepository from '../../posts/infra/posts.query-repository';
 import PostsService from '../../posts/application/posts.service';
-import { PostsQueryParams } from '../../posts/api/posts.query-params';
+import { PostsQueryParamsDto } from '../../posts/api/input-dto/posts-query-params.dto';
+import { BlogsQueryParamsDto } from './input-dto/blogs-query-params.dto';
 
 @Controller('blogs')
 class BlogsController {
@@ -31,7 +31,7 @@ class BlogsController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  getAllBlogs(@Query() query: BlogsQueryParams) {
+  getAllBlogs(@Query() query: BlogsQueryParamsDto) {
     return this.blogQueryRepository.getAll(query);
   }
   @Get(':id')
@@ -66,7 +66,7 @@ class BlogsController {
   @HttpCode(HttpStatus.OK)
   getAllPostsForBlog(
     @Param('blogId') blogId: string,
-    @Query() query: PostsQueryParams,
+    @Query() query: PostsQueryParamsDto,
   ) {
     return this.postQueryRepository.getPostsForBlog(blogId, query);
   }

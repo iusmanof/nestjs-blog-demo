@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { CreateBlogDto } from '../dto/create-blog.dto';
+import { CreateBlogDto } from '../api/input-dto/create-blog.dto';
 import BlogsRepository from '../infra/blogs.repository';
-import { BlogViewDto } from '../dto/blog-view.dto';
+import { BlogViewDto } from '../api/view-dto/blog-view.dto';
 
 @Injectable()
 class BlogsService {
