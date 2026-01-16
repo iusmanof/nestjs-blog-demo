@@ -9,10 +9,15 @@ import UsersController from './api/users.controller';
 import { AuthController } from './api/auth.controller';
 import UsersExternalRepository from './infra/users.external-repository';
 import UsersExternalService from './application/users.external-service';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    JwtModule.register({
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: '15m' },
+    }),
   ],
   controllers: [UsersController, AuthController, SecurityDevicesController],
   providers: [
@@ -22,6 +27,11 @@ import UsersExternalService from './application/users.external-service';
     UsersExternalService,
     UsersExternalRepository,
   ],
-  exports: [UsersExternalService, UsersExternalRepository, UsersRepository],
+  exports: [
+    UsersExternalService,
+    UsersExternalRepository,
+    UsersRepository,
+    JwtModule,
+  ],
 })
 export class UserAccountsModule {}

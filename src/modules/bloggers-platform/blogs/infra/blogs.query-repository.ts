@@ -15,9 +15,7 @@ class BlogQueryRepository {
   ) {}
 
   async getAll(query: BlogsQueryParamsDto) {
-    const filter = {
-      name: undefined,
-    };
+    const filter: any = {};
 
     if (query.searchNameTerm) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
