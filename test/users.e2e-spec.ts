@@ -1,41 +1,17 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { AppModule } from '../src/app.module';
-import { Connection } from 'mongoose';
-import { getConnectionToken } from '@nestjs/mongoose';
-import { pipesSetup } from '../src/setup/pipe.setup';
-import createUserUtil, {
-  PaginatedUsersResponse,
-  UserView,
-} from './utils/create-user.util';
+// import { Connection } from 'mongoose';
+import createUserUtil, { UserView } from './utils/create-user.util';
+import { PaginatedResponse } from './utils/paginated-response';
+import { initApp } from './utils/helper';
 
 describe('UsersController (e2e)', () => {
   let app: INestApplication;
-  let connection: Connection;
+  // let connection: Connection;
   let createdUserId: string;
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    pipesSetup(app);
-    await app.init();
-
-    connection = moduleFixture.get<Connection>(getConnectionToken());
-
-    if (!connection.db) {
-      throw new Error('MongoDB connection is not initialized');
-    }
-
-    const collections = await connection.db.listCollections().toArray();
-    for (const collection of collections) {
-      if (!collection.name.startsWith('system.')) {
-        await connection.db.collection(collection.name).deleteMany({});
-      }
-    }
+    app = await initApp();
 
     const createdUser = await createUserUtil(app, {
       login: 'user1',
@@ -65,7 +41,7 @@ describe('UsersController (e2e)', () => {
       .get('/users')
       .expect(200);
 
-    const body = response.body as PaginatedUsersResponse<UserView>;
+    const body = response.body as PaginatedResponse<UserView>;
 
     // pagination structure
     expect(body).toHaveProperty('items');
@@ -83,7 +59,7 @@ describe('UsersController (e2e)', () => {
   });
 
   it('[DELETE] /users/:id — should return 404 for deleted user', async () => {
-    await request(app.getHttpServer())
+    await request(app.getHttpServer() as unknown as Express.Application)
       .delete(`/users/${createdUserId}`)
       .expect(204);
   });

@@ -1,20 +1,15 @@
 import request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { AppModule } from '../src/app.module';
-import { Test } from '@nestjs/testing';
-import { pipesSetup } from '../src/setup/pipe.setup';
-import { Connection } from 'mongoose';
-import { getConnectionToken } from '@nestjs/mongoose';
 import createBlogUtil, {
   BlogView,
   createMultipleBlogsUtil,
 } from './utils/create-blog.util';
 import { PostView } from './utils/create-post.util';
 import { PaginatedResponse } from './utils/paginated-response';
+import { initApp } from './utils/helper';
 
 describe('BlogsController (e2e)', () => {
   let app: INestApplication;
-  let connection: Connection;
   let createBlogId: string;
   const testName = 'blogName';
   const testDescription = 'blogDescription';
@@ -24,26 +19,7 @@ describe('BlogsController (e2e)', () => {
   let postId: string;
 
   beforeAll(async () => {
-    const moduleFixture = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    pipesSetup(app);
-    await app.init();
-
-    connection = moduleFixture.get<Connection>(getConnectionToken());
-
-    if (!connection.db) {
-      throw new Error('MongoDB connection is not initialized');
-    }
-
-    const collections = await connection.db.listCollections().toArray();
-    for (const collection of collections) {
-      if (!collection.name.startsWith('system.')) {
-        await connection.db.collection(collection.name).deleteMany({});
-      }
-    }
+    app = await initApp();
 
     const createdBlog = await createBlogUtil(app, {
       name: testName,
@@ -63,7 +39,7 @@ describe('BlogsController (e2e)', () => {
       description: 'blogDescription',
       websiteUrl: 'https://example.com',
     });
-    console.log(createdBlogs);
+
     const response = await request(app.getHttpServer())
       .get('/blogs')
       .expect(200);

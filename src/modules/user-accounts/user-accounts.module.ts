@@ -10,13 +10,33 @@ import { AuthController } from './api/auth.controller';
 import UsersExternalRepository from './infra/users.external-repository';
 import UsersExternalService from './application/users.external-service';
 import { JwtModule } from '@nestjs/jwt';
+import AuthService from './application/auth.service';
+import { CryptoService } from './application/crypto.service';
+import { LocalStrategy } from './guards/local/local.strategy';
+import { PassportModule } from '@nestjs/passport';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { NotificationModule } from '../notification/notification.module';
+import { ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+import { CoreModule } from '../../core/core.module';
+import { JwtStrategy } from './guards/bearer/jwt.stategy';
 
 @Module({
   imports: [
+    CoreModule,
+    PassportModule,
+    ConfigModule,
+    NotificationModule,
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
-    JwtModule.register({
-      secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '15m' },
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        secret: config.get<string>('JWT_SECRET'),
+        signOptions: {
+          expiresIn: '300s',
+        },
+      }),
     }),
   ],
   controllers: [UsersController, AuthController, SecurityDevicesController],
@@ -26,12 +46,15 @@ import { JwtModule } from '@nestjs/jwt';
     UsersRepository,
     UsersExternalService,
     UsersExternalRepository,
+    AuthService,
+    CryptoService,
+    LocalStrategy,
+    JwtStrategy,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
-  exports: [
-    UsersExternalService,
-    UsersExternalRepository,
-    UsersRepository,
-    JwtModule,
-  ],
+  exports: [JwtModule, UsersRepository, UsersExternalService],
 })
 export class UserAccountsModule {}

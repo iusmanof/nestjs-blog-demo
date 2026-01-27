@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from '../domain/user.entity';
-import { CreateUserDto } from '../api/input-dto/create-user.dto';
+import { UserDbType } from '../domain/user-db.type';
 
 @Injectable()
 class UsersRepository {
@@ -11,11 +11,11 @@ class UsersRepository {
     private readonly userModel: Model<UserDocument>,
   ) {}
 
-  async create(dto: CreateUserDto): Promise<UserDocument> {
+  async create(dto: UserDbType): Promise<UserDocument> {
     const user = new this.userModel({
       login: dto.login,
       email: dto.email,
-      password: dto.password, // позже захешируешь
+      passwordHash: dto.passwordHash,
     });
 
     return user.save();
@@ -28,6 +28,10 @@ class UsersRepository {
 
   async deleteAll() {
     await this.userModel.deleteMany({});
+  }
+
+  async save(user: UserDocument) {
+    await user.save();
   }
 }
 

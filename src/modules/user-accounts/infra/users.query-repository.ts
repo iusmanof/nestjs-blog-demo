@@ -58,4 +58,32 @@ export class UsersQueryRepository {
       items,
     });
   }
+
+  async findByLoginOrEmail(loginOrEmail: string): Promise<UserDocument | null> {
+    return this.userModel
+      .findOne({
+        $or: [{ login: loginOrEmail }, { email: loginOrEmail }],
+      })
+      .select('+passwordHash')
+      .exec();
+  }
+
+  async findByEmail(email: string) {
+    return this.userModel.findOne({ email }).exec();
+  }
+
+  async findById(id: string): Promise<UserDocument | null> {
+    return this.userModel.findOne({
+      _id: id,
+      deletedAt: null,
+    });
+  }
+
+  async findByRecoveryCode(code: string) {
+    return this.userModel.findOne({ recoveryCode: code }).exec();
+  }
+
+  async findByConfirmationCode(code: string) {
+    return this.userModel.findOne({ 'emailConfirmation.code': code }).exec();
+  }
 }
