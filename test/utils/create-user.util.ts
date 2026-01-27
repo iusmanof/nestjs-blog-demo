@@ -11,8 +11,10 @@ async function createUserUtil(
   app: INestApplication,
   data: { login: string; password: string; email: string },
 ): Promise<UserView> {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   const response = await request(app.getHttpServer())
     .post('/users')
+    .auth('admin', 'qwerty', { type: 'basic' })
     .send(data)
     .expect(201);
 

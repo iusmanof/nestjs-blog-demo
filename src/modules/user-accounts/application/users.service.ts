@@ -10,6 +10,7 @@ import { CryptoService } from './crypto.service';
 import { EmailService } from '../../notification/email.service';
 import { DomainException } from '../../../core/exceptions/filters/domain-exceptions';
 import { DomainExceptionCode } from '../../../core/exceptions/filters/domain-exception-codes';
+import { CodeGeneratorService } from './code-generator.service';
 
 @Injectable()
 class UsersService {
@@ -18,6 +19,7 @@ class UsersService {
     private readonly usersQueryRepository: UsersQueryRepository,
     private readonly cryptoService: CryptoService,
     private readonly emailService: EmailService,
+    private readonly codeGeneratorService: CodeGeneratorService,
   ) {}
 
   async create(dto: CreateUserDto): Promise<UserDocument> {
@@ -65,7 +67,7 @@ class UsersService {
       });
     }
 
-    const confirmCode = Math.floor(1000 + Math.random() * 9000).toString();
+    const confirmCode = this.codeGeneratorService.generateNumericCode(4);
     const createdUser = await this.create(dto);
 
     createdUser.setConfirmationCode(confirmCode);
@@ -179,8 +181,6 @@ class UsersService {
   async sendPasswordRecoveryCode(email: string): Promise<void> {
     const user = await this.usersQueryRepository.findByEmail(email);
 
-    // Если пользователя нет — возвращаем 204 молча
-
     if (!user) {
       throw new DomainException({
         code: DomainExceptionCode.BadRequest,
@@ -189,8 +189,7 @@ class UsersService {
       });
     }
 
-    // Генерируем recovery code
-    const recoveryCode = Math.floor(100000 + Math.random() * 900000).toString(); // 6 цифр
+    const recoveryCode = this.codeGeneratorService.generateNumericCode(6);
 
     user.recoveryCode = recoveryCode;
     user.recoveryCodeExpiration = new Date(Date.now() + 1000 * 60 * 15); // 15 минут

@@ -37,8 +37,10 @@ describe('UsersController (e2e)', () => {
   });
 
   it('[GET] /users — should return users list', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const response = await request(app.getHttpServer())
       .get('/users')
+      .auth('admin', 'qwerty', { type: 'basic' })
       .expect(200);
 
     const body = response.body as PaginatedResponse<UserView>;
@@ -59,8 +61,10 @@ describe('UsersController (e2e)', () => {
   });
 
   it('[DELETE] /users/:id — should return 404 for deleted user', async () => {
-    await request(app.getHttpServer() as unknown as Express.Application)
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    await request(app.getHttpServer())
       .delete(`/users/${createdUserId}`)
+      .auth('admin', 'qwerty', { type: 'basic' })
       .expect(204);
   });
 });

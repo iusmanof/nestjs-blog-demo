@@ -30,7 +30,9 @@ describe('BlogsController (e2e)', () => {
   });
 
   afterAll(async () => {
-    await app.close();
+    if (app) {
+      await app.close();
+    }
   });
 
   it('[GET] /blogs', async () => {
@@ -40,6 +42,7 @@ describe('BlogsController (e2e)', () => {
       websiteUrl: 'https://example.com',
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const response = await request(app.getHttpServer())
       .get('/blogs')
       .expect(200);
@@ -76,6 +79,7 @@ describe('BlogsController (e2e)', () => {
   });
 
   it('[GET] /blogs/:id', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const response = await request(app.getHttpServer())
       .get(`/blogs/${createBlogId}`)
       .expect(200);
@@ -98,6 +102,7 @@ describe('BlogsController (e2e)', () => {
       description: testDescription,
       websiteUrl: testWebsiteUrl,
     };
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const response = await request(app.getHttpServer())
       .post('/blogs')
       .send(data)
@@ -122,11 +127,13 @@ describe('BlogsController (e2e)', () => {
       websiteUrl: 'https://updated.example.com',
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     await request(app.getHttpServer())
       .put(`/blogs/${createBlogId}`)
       .send(data)
       .expect(204);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const response = await request(app.getHttpServer())
       .get(`/blogs/${createBlogId}`)
       .expect(200);
@@ -149,6 +156,7 @@ describe('BlogsController (e2e)', () => {
       content: testContent,
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const response = await request(app.getHttpServer())
       .post(`/blogs/${createBlogId}/posts`)
       .send(data)
@@ -159,6 +167,7 @@ describe('BlogsController (e2e)', () => {
   });
 
   it('[GET] /blogs/:blogId/posts', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const response = await request(app.getHttpServer())
       .get(`/blogs/${createBlogId}/posts`)
       .expect(200);
@@ -181,10 +190,12 @@ describe('BlogsController (e2e)', () => {
   });
 
   it('[DELETE] /blogs/:id', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     await request(app.getHttpServer())
       .delete(`/blogs/${createBlogId}`)
       .expect(204);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     await request(app.getHttpServer())
       .delete(`/blogs/${createBlogId}`)
       .expect(404);

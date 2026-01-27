@@ -20,6 +20,7 @@ import { ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { CoreModule } from '../../core/core.module';
 import { JwtStrategy } from './guards/bearer/jwt.stategy';
+import { CodeGeneratorService } from './application/code-generator.service';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { JwtStrategy } from './guards/bearer/jwt.stategy';
     CryptoService,
     LocalStrategy,
     JwtStrategy,
+    CodeGeneratorService,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
