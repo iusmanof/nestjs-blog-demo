@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateBlogDto } from '../api/input-dto/create-blog.dto';
 import BlogsRepository from '../infra/blogs.repository';
 import { BlogViewDto } from '../api/view-dto/blog-view.dto';
+import { Types } from 'mongoose';
 
 @Injectable()
 class BlogsService {
@@ -12,11 +13,11 @@ class BlogsService {
     return BlogViewDto.mapToView(blog);
   }
 
-  async update(id: string, dto: CreateBlogDto): Promise<boolean> {
+  async update(id: Types.ObjectId, dto: CreateBlogDto): Promise<boolean> {
     return await this.blogsRepository.update(id, dto);
   }
 
-  async delete(id: string): Promise<boolean> {
+  async delete(id: Types.ObjectId): Promise<boolean> {
     return await this.blogsRepository.delete(id);
   }
 }

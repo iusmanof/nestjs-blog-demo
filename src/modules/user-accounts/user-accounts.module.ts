@@ -22,6 +22,20 @@ import { CoreModule } from '../../core/core.module';
 import { JwtStrategy } from './guards/bearer/jwt.stategy';
 import { CodeGeneratorService } from './application/code-generator.service';
 
+const services = [
+  UsersService,
+  UsersExternalService,
+  AuthService,
+  CryptoService,
+  CodeGeneratorService,
+];
+const repositories = [
+  UsersQueryRepository,
+  UsersRepository,
+  UsersExternalRepository,
+];
+const strategies = [LocalStrategy, JwtStrategy];
+
 @Module({
   imports: [
     CoreModule,
@@ -42,16 +56,9 @@ import { CodeGeneratorService } from './application/code-generator.service';
   ],
   controllers: [UsersController, AuthController, SecurityDevicesController],
   providers: [
-    UsersService,
-    UsersQueryRepository,
-    UsersRepository,
-    UsersExternalService,
-    UsersExternalRepository,
-    AuthService,
-    CryptoService,
-    LocalStrategy,
-    JwtStrategy,
-    CodeGeneratorService,
+    ...services,
+    ...repositories,
+    ...strategies,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,

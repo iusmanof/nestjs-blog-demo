@@ -11,10 +11,16 @@ import BlogsQueryRepository from './blogs/infra/blogs.query-repository';
 import PostsRepository from './posts/infra/posts.repository';
 import PostsQueryRepository from './posts/infra/posts.query-repository';
 import { UserAccountsModule } from '../user-accounts/user-accounts.module';
+import { CqrsModule } from '@nestjs/cqrs';
+import { CreateBlogUseCase } from './blogs/application/use-cases/create-blog.usecase';
+import { GetBlogByIdQueryHandler } from './blogs/application/queries/get-blog-by-id.query-handler';
+import { GetBlogsQueryHandler } from './blogs/application/queries/get-blogs.query-handler';
+import { UpdateBlogUseCase } from './blogs/application/use-cases/update-blog.usecase';
 
 // Регистрируем провайдеры всех сущностей блоггерской платформы (blogs, posts, comments, etc...)
 @Module({
   imports: [
+    CqrsModule,
     MongooseModule.forFeature([{ name: Blog.name, schema: BlogSchema }]),
     MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }]),
     UserAccountsModule,
@@ -27,6 +33,10 @@ import { UserAccountsModule } from '../user-accounts/user-accounts.module';
     PostsService,
     PostsRepository,
     PostsQueryRepository,
+    CreateBlogUseCase,
+    UpdateBlogUseCase,
+    GetBlogByIdQueryHandler,
+    GetBlogsQueryHandler,
   ],
   exports: [BlogsRepository, PostsRepository],
 })

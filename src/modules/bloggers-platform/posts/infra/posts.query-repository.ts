@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PostsQueryParamsDto } from '../api/input-dto/posts-query-params.dto';
 import { PostViewDto } from '../api/view-dto/post-view.dto';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Post, PostDocument } from '../domain/posts.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { PostPaginatedViewDto } from '../api/view-dto/post-paginated.view.dto';
@@ -44,7 +44,7 @@ class PostsQueryRepository {
     return PostViewDto.mapToView(post);
   }
 
-  async getPostsForBlog(blogId: string, query: PostsQueryParamsDto) {
+  async getPostsForBlog(blogId: Types.ObjectId, query: PostsQueryParamsDto) {
     await this.blogsQueryRepository.getByIdOrNotFoundFail(blogId);
 
     const filter = { blogId };

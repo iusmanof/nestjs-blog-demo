@@ -1,7 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Blog, BlogDocument } from '../domain/blogs.entity';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { BlogViewDto } from '../api/view-dto/blog-view.dto';
 import { BlogPaginatedViewDto } from '../api/view-dto/blog-paginated.view.dto';
 import { SortDirection } from '../../../../core/dto/base.query-params.dto';
@@ -18,16 +18,18 @@ class BlogQueryRepository {
     const filter: any = {};
 
     if (query.searchNameTerm) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
       filter.name = { $regex: query.searchNameTerm, $options: 'i' } as any;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const totalCount = await this.blogModel.countDocuments(filter);
 
     const sortField = query.sortBy || 'createdAt';
     const sortOrder = query.sortDirection === SortDirection.Asc ? 1 : -1;
 
     const blogs = await this.blogModel
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       .find(filter)
       .sort({ [sortField]: sortOrder })
       .skip(query.calculateSkip())
@@ -43,12 +45,20 @@ class BlogQueryRepository {
     });
   }
 
-  async getByIdOrNotFoundFail(id: string) {
-    const blog = await this.blogModel.findById(id);
-    if (!blog) {
-      throw new NotFoundException('Blog not found');
+  async getByIdOrNotFoundFail(id: Types.ObjectId): Promise<BlogViewDto> {
+    const entity = await this.blogModel.findById(id);
+    if (!entity) {
+      throw new Error('Blog not found');
     }
-    return BlogViewDto.mapToView(blog);
+    return BlogViewDto.mapToView(entity);
+  }
+
+  async findOrNotFoundFail(id: Types.ObjectId): Promise<BlogDocument> {
+    const entity = await this.blogModel.findById(id);
+    if (!entity) {
+      throw new Error('Blog not found');
+    }
+    return entity;
   }
 }
 

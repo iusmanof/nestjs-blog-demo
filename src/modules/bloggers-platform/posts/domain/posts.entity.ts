@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Model } from 'mongoose';
+import { HydratedDocument, Model, Types } from 'mongoose';
 
 export type LikeStatus = 'None' | 'Like' | 'Dislike';
 
@@ -28,7 +28,7 @@ export class Post {
   content: string;
 
   @Prop({ type: String, required: true })
-  blogId: string;
+  blogId: Types.ObjectId;
 
   @Prop({ type: String, required: true })
   blogName: string;

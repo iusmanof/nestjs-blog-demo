@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Blog, BlogDocument } from '../domain/blogs.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateBlogDto } from '../api/input-dto/create-blog.dto';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 
 @Injectable()
 class BlogsRepository {
@@ -22,7 +22,7 @@ class BlogsRepository {
     return blog;
   }
 
-  async update(id: string, dto: CreateBlogDto): Promise<boolean> {
+  async update(id: Types.ObjectId, dto: CreateBlogDto): Promise<boolean> {
     const blog = await this.blogModel.updateOne(
       { _id: id },
       {
@@ -36,13 +36,17 @@ class BlogsRepository {
     return blog.matchedCount === 1;
   }
 
-  async delete(id: string): Promise<boolean> {
+  async delete(id: Types.ObjectId): Promise<boolean> {
     const blog = await this.blogModel.deleteOne({ _id: id });
     return blog.deletedCount === 1;
   }
 
   async deleteAll() {
     await this.blogModel.deleteMany({});
+  }
+
+  async save(entity: BlogDocument) {
+    await entity.save();
   }
 }
 

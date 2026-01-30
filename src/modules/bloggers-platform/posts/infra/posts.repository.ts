@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Post, PostDocument } from '../domain/posts.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreatePostDto } from '../api/input-dto/create-post.dto';
@@ -49,7 +49,7 @@ class PostsRepository {
 
   async createForBlog(
     dto: CreatePostForBlogDto,
-    blogId: string,
+    blogId: Types.ObjectId,
     blogName: string,
   ): Promise<PostDocument> {
     const post = new this.postModel({

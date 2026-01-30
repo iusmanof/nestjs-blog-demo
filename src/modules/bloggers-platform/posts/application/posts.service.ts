@@ -5,6 +5,7 @@ import PostsRepository from '../infra/posts.repository';
 import { CreatePostForBlogDto } from '../api/input-dto/create-post-for-blog.dto';
 import BlogsQueryRepository from '../../blogs/infra/blogs.query-repository';
 import { PostViewDto } from '../api/view-dto/post-view.dto';
+import { Types } from 'mongoose';
 
 @Injectable()
 class PostsService {
@@ -25,7 +26,7 @@ class PostsService {
     return await this.postsRepository.delete(id);
   }
 
-  async createForBlog(blogId: string, dto: CreatePostForBlogDto) {
+  async createForBlog(blogId: Types.ObjectId, dto: CreatePostForBlogDto) {
     const blog = await this.blogsQueryRepository.getByIdOrNotFoundFail(blogId);
     const blogName = blog.name;
     const post = await this.postsRepository.createForBlog(

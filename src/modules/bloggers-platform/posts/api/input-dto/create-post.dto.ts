@@ -1,4 +1,5 @@
 import { IsString, Length } from 'class-validator';
+import { Types } from 'mongoose';
 
 export class CreatePostDto {
   @IsString()
@@ -14,5 +15,5 @@ export class CreatePostDto {
   content: string;
 
   @IsString()
-  blogId: string;
+  blogId: Types.ObjectId;
 }

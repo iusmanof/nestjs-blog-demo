@@ -1,5 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Model } from 'mongoose';
+import { CreateBlogDto } from '../api/input-dto/create-blog.dto';
+import { UpdateBlogDto } from '../api/input-dto/update-blog.dto';
 
 @Schema({ timestamps: { createdAt: true, updatedAt: false } })
 export class Blog {
@@ -16,6 +18,20 @@ export class Blog {
   isMembership: boolean;
 
   createdAt: Date;
+
+  static createInstance(dto: CreateBlogDto): BlogDocument {
+    const instance = new this() as BlogDocument;
+    instance.name = dto.name;
+    instance.description = dto.description;
+    instance.websiteUrl = dto.websiteUrl;
+    return instance;
+  }
+
+  update(dto: UpdateBlogDto) {
+    this.name = dto.name;
+    this.description = dto.description;
+    this.websiteUrl = dto.websiteUrl;
+  }
 }
 
 // создаёт mongoose-схему на основе класса
