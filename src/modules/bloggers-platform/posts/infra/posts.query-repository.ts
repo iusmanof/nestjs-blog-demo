@@ -31,15 +31,6 @@ class PostsQueryRepository {
     };
   }
 
-  // async getByIdOrNotFoundFail(id: Types.ObjectId) {
-  //   const post = await this.postModel.findById(id).lean();
-  //   if (!post) {
-  //     throw new NotFoundException('Post not found');
-  //   }
-  //
-  //   return post;
-  // }
-
   async findById(id: Types.ObjectId): Promise<PostDocument | null> {
     return this.postModel.findById(id).lean(); // просто ищет, не кидает исключение
   }
