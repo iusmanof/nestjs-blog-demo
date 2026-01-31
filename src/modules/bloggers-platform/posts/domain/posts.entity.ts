@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Model, Types } from 'mongoose';
 import { CreatePostDto } from '../api/input-dto/create-post.dto';
+import { UpdatePostDto } from '../api/input-dto/update-post.dto';
 
 export type LikeStatus = 'None' | 'Like' | 'Dislike';
 
@@ -78,6 +79,14 @@ export class Post {
     };
 
     return post;
+  }
+
+  update(dto: UpdatePostDto, blogName: string) {
+    this.title = dto.title;
+    this.shortDescription = dto.shortDescription;
+    this.content = dto.content;
+    this.blogId = new Types.ObjectId(dto.blogId);
+    this.blogName = blogName;
   }
 }
 

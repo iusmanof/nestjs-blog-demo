@@ -23,23 +23,22 @@ class PostsRepository {
     return this.postModel.createInstance(dto, blog.name);
   }
 
-  async update(id: Types.ObjectId, dto: CreatePostDto): Promise<boolean> {
-    const post = await this.postModel.updateOne(
-      { _id: id },
-      {
-        $set: {
-          title: dto.title,
-          shortDescription: dto.shortDescription,
-          content: dto.content,
-          blogId: dto.blogId,
-        },
-      },
-    );
-    return post.matchedCount === 1;
+  async update(
+    id: Types.ObjectId,
+    dto: CreatePostDto,
+    blogName: string,
+  ): Promise<boolean> {
+    const post = await this.postModel.findById(id);
+    if (!post) return false;
+
+    post.update(dto, blogName);
+    await post.save();
+
+    return true;
   }
   async delete(id: Types.ObjectId): Promise<boolean> {
-    const post = await this.postModel.deleteOne({ _id: id });
-    return post.deletedCount === 1;
+    const result = await this.postModel.deleteOne({ _id: id });
+    return result.deletedCount === 1;
   }
 
   async createForBlog(

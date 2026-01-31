@@ -5,29 +5,27 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  NotFoundException,
   Param,
   Post,
   Put,
   Query,
 } from '@nestjs/common';
-import PostsService from '../application/posts.service';
 import { CreatePostDto } from './input-dto/create-post.dto';
 import PostsQueryRepository from '../infra/posts.query-repository';
 import { PostsQueryParamsDto } from './input-dto/posts-query-params.dto';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { CreatePostCommand } from '../application/use-cases/create-post.usercase';
+import { CreatePostCommand } from '../application/use-cases/create-post.usecase';
 import { Types } from 'mongoose';
 import { PostViewDto } from './view-dto/post-view.dto';
 import { GetPostByIdQuery } from '../application/queries/get-posts-by-id.query-handler';
 import { GetPostQuery } from '../application/queries/get-posts.query-handler';
-import { UpdatePostCommand } from '../application/use-cases/update-post.usercase';
+import { UpdatePostCommand } from '../application/use-cases/update-post.usecase';
+import { DeletePostCommand } from '../application/use-cases/delete-post.usecase';
 
 @Controller('posts')
 class PostsController {
   constructor(
     // удалить позже
-    private readonly postsService: PostsService,
     private readonly postQueryRepository: PostsQueryRepository,
     // не удалять
     private readonly commandBus: CommandBus,
@@ -63,21 +61,18 @@ class PostsController {
     return this.commandBus.execute(new UpdatePostCommand(id, dto));
   }
 
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deletePost(@Param('id') id: Types.ObjectId): Promise<void> {
+    return this.commandBus.execute(new DeletePostCommand(id));
+  }
+
   // ниже ревакторинг нужно сделать
 
   @Get(':postId/comments')
   @HttpCode(HttpStatus.OK)
   async getCommentsForPost(@Param('postId') postId: Types.ObjectId) {
     return await this.postQueryRepository.getByIdOrNotFoundFail(postId);
-  }
-
-  @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async deletePost(@Param('id') id: Types.ObjectId) {
-    const deletedPost = await this.postsService.delete(id);
-    if (!deletedPost) {
-      throw new NotFoundException(`Post not found`);
-    }
   }
 }
 

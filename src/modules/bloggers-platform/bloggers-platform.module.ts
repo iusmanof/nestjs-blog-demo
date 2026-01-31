@@ -17,10 +17,11 @@ import { GetBlogByIdQueryHandler } from './blogs/application/queries/get-blog-by
 import { GetBlogsQueryHandler } from './blogs/application/queries/get-blogs.query-handler';
 import { UpdateBlogUseCase } from './blogs/application/use-cases/update-blog.usecase';
 import { DeleteBlogUseCase } from './blogs/application/use-cases/delete-blog-use.case';
-import { CreatePostUseCase } from './posts/application/use-cases/create-post.usercase';
+import { CreatePostUseCase } from './posts/application/use-cases/create-post.usecase';
 import { GetPostByIdQueryHandler } from './posts/application/queries/get-posts-by-id.query-handler';
 import { GetPostQueryHandler } from './posts/application/queries/get-posts.query-handler';
-import { UpdatePostUserCase } from './posts/application/use-cases/update-post.usercase';
+import { UpdatePostUsecase } from './posts/application/use-cases/update-post.usecase';
+import { DeletePostUseCase } from './posts/application/use-cases/delete-post.usecase';
 
 const repositories = [
   BlogsRepository,
@@ -33,7 +34,8 @@ const useCases = [
   UpdateBlogUseCase,
   DeleteBlogUseCase,
   CreatePostUseCase,
-  UpdatePostUserCase,
+  UpdatePostUsecase,
+  DeletePostUseCase,
 ];
 const handlers = [
   GetBlogByIdQueryHandler,
