@@ -22,12 +22,17 @@ import { GetPostByIdQueryHandler } from './posts/application/queries/get-posts-b
 import { GetPostQueryHandler } from './posts/application/queries/get-posts.query-handler';
 import { UpdatePostUsecase } from './posts/application/use-cases/update-post.usecase';
 import { DeletePostUseCase } from './posts/application/use-cases/delete-post.usecase';
+import { CreatePostForBlogUseCase } from './blogs/application/use-cases/create-post-for-blog.usecase';
+import { GetPostsForBlogQueryHandler } from './blogs/application/queries/get-posts-for-blog.query-handler';
+import CommentsQueryRepository from './posts/infra/comments.query-repository';
+import { Comment, CommentSchema } from './posts/domain/comment.entity';
 
 const repositories = [
   BlogsRepository,
   BlogsQueryRepository,
   PostsRepository,
   PostsQueryRepository,
+  CommentsQueryRepository,
 ];
 const useCases = [
   CreateBlogUseCase,
@@ -36,12 +41,14 @@ const useCases = [
   CreatePostUseCase,
   UpdatePostUsecase,
   DeletePostUseCase,
+  CreatePostForBlogUseCase,
 ];
 const handlers = [
   GetBlogByIdQueryHandler,
   GetBlogsQueryHandler,
   GetPostByIdQueryHandler,
   GetPostQueryHandler,
+  GetPostsForBlogQueryHandler,
 ];
 const services = [BlogsService, PostsService];
 // Регистрируем провайдеры всех сущностей блоггерской платформы (blogs, posts, comments, etc...)
@@ -50,6 +57,7 @@ const services = [BlogsService, PostsService];
     CqrsModule,
     MongooseModule.forFeature([{ name: Blog.name, schema: BlogSchema }]),
     MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }]),
+    MongooseModule.forFeature([{ name: Comment.name, schema: CommentSchema }]),
     UserAccountsModule,
   ],
   controllers: [BlogsController, PostsController],

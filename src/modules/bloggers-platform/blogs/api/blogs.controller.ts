@@ -26,6 +26,8 @@ import { GetBlogsQuery } from '../application/queries/get-blogs.query-handler';
 import { UpdateBlogCommand } from '../application/use-cases/update-blog.usecase';
 import { UpdateBlogDto } from './input-dto/update-blog.dto';
 import { DeleteBlogCommand } from '../application/use-cases/delete-blog-use.case';
+import { GetPostsForBlogQuery } from '../application/queries/get-posts-for-blog.query-handler';
+import { CreatePostForBlogCommand } from '../application/use-cases/create-post-for-blog.usecase';
 
 @Controller('blogs')
 class BlogsController {
@@ -83,24 +85,22 @@ class BlogsController {
     );
   }
 
-  //  внизу все роуты на рефакторинг
-
   @Get(':blogId/posts')
   @HttpCode(HttpStatus.OK)
   getAllPostsForBlog(
-    @Param('blogId') blogId: Types.ObjectId,
+    @Param('blogId') blogId: string,
     @Query() query: PostsQueryParamsDto,
   ) {
-    return this.postQueryRepository.getPostsForBlog(blogId, query);
+    return this.queryBus.execute(new GetPostsForBlogQuery(blogId, query));
   }
 
   @Post(':blogId/posts')
   @HttpCode(HttpStatus.CREATED)
   createPostForBlog(
-    @Param('blogId') blogId: Types.ObjectId,
+    @Param('blogId') blogId: string,
     @Body() dto: CreatePostForBlogDto,
   ) {
-    return this.postsService.createForBlog(blogId, dto);
+    return this.commandBus.execute(new CreatePostForBlogCommand(blogId, dto));
   }
 }
 

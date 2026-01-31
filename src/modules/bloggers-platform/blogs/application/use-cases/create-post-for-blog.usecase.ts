@@ -1,0 +1,41 @@
+import { ICommandHandler, CommandHandler } from '@nestjs/cqrs';
+import { Types } from 'mongoose';
+import { CreatePostForBlogDto } from '../../../posts/api/input-dto/create-post-for-blog.dto';
+import PostsRepository from '../../../posts/infra/posts.repository';
+import BlogsQueryRepository from '../../../blogs/infra/blogs.query-repository';
+import { PostViewDto } from '../../../posts/api/view-dto/post-view.dto';
+
+export class CreatePostForBlogCommand {
+  constructor(
+    public blogId: string, // строка из контроллера
+    public dto: CreatePostForBlogDto,
+  ) {}
+}
+
+@CommandHandler(CreatePostForBlogCommand)
+export class CreatePostForBlogUseCase implements ICommandHandler<
+  CreatePostForBlogCommand,
+  PostViewDto
+> {
+  constructor(
+    private readonly postsRepository: PostsRepository,
+    private readonly blogsQueryRepository: BlogsQueryRepository,
+  ) {}
+
+  async execute(command: CreatePostForBlogCommand): Promise<PostViewDto> {
+    const { blogId, dto } = command;
+    const objectId = new Types.ObjectId(blogId);
+
+    const blog =
+      await this.blogsQueryRepository.getByIdOrNotFoundFail(objectId);
+    const blogName = blog.name;
+
+    const post = await this.postsRepository.createForBlog(
+      dto,
+      objectId,
+      blogName,
+    );
+
+    return PostViewDto.mapToView(post);
+  }
+}

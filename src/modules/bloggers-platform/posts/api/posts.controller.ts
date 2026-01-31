@@ -21,6 +21,9 @@ import { GetPostByIdQuery } from '../application/queries/get-posts-by-id.query-h
 import { GetPostQuery } from '../application/queries/get-posts.query-handler';
 import { UpdatePostCommand } from '../application/use-cases/update-post.usecase';
 import { DeletePostCommand } from '../application/use-cases/delete-post.usecase';
+import { GetCommentsByPostIdQuery } from '../application/queries/get-comments-by-post-id.query-handler';
+import { CommentViewDto } from './view-dto/comment-view.dto';
+import { CommentsQueryParamsDto } from './input-dto/comments-query-params.dto';
 
 @Controller('posts')
 class PostsController {
@@ -71,8 +74,11 @@ class PostsController {
 
   @Get(':postId/comments')
   @HttpCode(HttpStatus.OK)
-  async getCommentsForPost(@Param('postId') postId: Types.ObjectId) {
-    return await this.postQueryRepository.getByIdOrNotFoundFail(postId);
+  async getCommentsForPost(
+    @Param('postId') postId: string,
+    @Query() query: CommentsQueryParamsDto,
+  ): Promise<CommentViewDto> {
+    return this.queryBus.execute(new GetCommentsByPostIdQuery(postId, query));
   }
 }
 

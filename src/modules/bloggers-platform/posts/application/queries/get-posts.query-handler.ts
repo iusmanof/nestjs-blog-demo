@@ -12,7 +12,18 @@ export class GetPostQuery {
 export class GetPostQueryHandler implements IQueryHandler<GetPostQuery> {
   constructor(private readonly postsQueryRepository: PostsQueryRepository) {}
 
-  execute(query: GetPostQuery): Promise<PostPaginatedViewDto<PostViewDto>> {
-    return this.postsQueryRepository.getAll(query.queryParams);
+  async execute(
+    query: GetPostQuery,
+  ): Promise<PostPaginatedViewDto<PostViewDto>> {
+    const { items, totalCount } = await this.postsQueryRepository.getAll(
+      query.queryParams,
+    );
+
+    return PostPaginatedViewDto.mapToView({
+      items: items.map(PostViewDto.mapToView),
+      page: query.queryParams.pageNumber,
+      pageSize: query.queryParams.pageSize,
+      totalCount,
+    });
   }
 }

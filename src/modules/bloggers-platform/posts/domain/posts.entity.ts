@@ -2,8 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Model, Types } from 'mongoose';
 import { CreatePostDto } from '../api/input-dto/create-post.dto';
 import { UpdatePostDto } from '../api/input-dto/update-post.dto';
-
-export type LikeStatus = 'None' | 'Like' | 'Dislike';
+import { LikeStatus } from '../../../../core/types/like-status.type';
 
 export class ExtendedLikesInfo {
   likesCount: number;
