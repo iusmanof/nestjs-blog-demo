@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Model, Types } from 'mongoose';
+import { CreatePostDto } from '../api/input-dto/create-post.dto';
 
 export type LikeStatus = 'None' | 'Like' | 'Dislike';
 
@@ -59,6 +60,25 @@ export class Post {
 
   @Prop()
   createdAt: Date;
+
+  static createInstance(dto: CreatePostDto, blogName: string): PostDocument {
+    const post = new this() as PostDocument;
+
+    post.title = dto.title;
+    post.shortDescription = dto.shortDescription;
+    post.content = dto.content;
+    post.blogId = new Types.ObjectId(dto.blogId);
+    post.blogName = blogName;
+
+    post.extendedLikesInfo = {
+      likesCount: 0,
+      dislikesCount: 0,
+      myStatus: 'None',
+      newestLikes: [],
+    };
+
+    return post;
+  }
 }
 
 export const PostSchema = SchemaFactory.createForClass(Post);

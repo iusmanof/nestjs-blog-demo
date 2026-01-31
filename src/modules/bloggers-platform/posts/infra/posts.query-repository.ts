@@ -35,7 +35,7 @@ class PostsQueryRepository {
     });
   }
 
-  async getByIdOrNotFoundFail(id: string) {
+  async getByIdOrNotFoundFail(id: Types.ObjectId) {
     const post = await this.postModel.findById(id).lean();
     if (!post) {
       throw new NotFoundException('Post not found');

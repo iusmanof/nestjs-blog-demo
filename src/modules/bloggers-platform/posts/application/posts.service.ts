@@ -18,11 +18,11 @@ class PostsService {
     return await this.postsRepository.create(dto);
   }
 
-  async update(id: string, dto: CreatePostDto): Promise<boolean> {
+  async update(id: Types.ObjectId, dto: CreatePostDto): Promise<boolean> {
     return await this.postsRepository.update(id, dto);
   }
 
-  async delete(id: string): Promise<boolean> {
+  async delete(id: Types.ObjectId): Promise<boolean> {
     return await this.postsRepository.delete(id);
   }
 

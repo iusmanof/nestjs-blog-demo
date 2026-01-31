@@ -16,7 +16,32 @@ import { CreateBlogUseCase } from './blogs/application/use-cases/create-blog.use
 import { GetBlogByIdQueryHandler } from './blogs/application/queries/get-blog-by-id.query-handler';
 import { GetBlogsQueryHandler } from './blogs/application/queries/get-blogs.query-handler';
 import { UpdateBlogUseCase } from './blogs/application/use-cases/update-blog.usecase';
+import { DeleteBlogUseCase } from './blogs/application/use-cases/delete-blog-use.case';
+import { CreatePostUseCase } from './posts/application/use-cases/create-post.usercase';
+import { GetPostByIdQueryHandler } from './posts/application/queries/get-posts-by-id.query-handler';
+import { GetPostQueryHandler } from './posts/application/queries/get-posts.query-handler';
+import { UpdatePostUserCase } from './posts/application/use-cases/update-post.usercase';
 
+const repositories = [
+  BlogsRepository,
+  BlogsQueryRepository,
+  PostsRepository,
+  PostsQueryRepository,
+];
+const useCases = [
+  CreateBlogUseCase,
+  UpdateBlogUseCase,
+  DeleteBlogUseCase,
+  CreatePostUseCase,
+  UpdatePostUserCase,
+];
+const handlers = [
+  GetBlogByIdQueryHandler,
+  GetBlogsQueryHandler,
+  GetPostByIdQueryHandler,
+  GetPostQueryHandler,
+];
+const services = [BlogsService, PostsService];
 // Регистрируем провайдеры всех сущностей блоггерской платформы (blogs, posts, comments, etc...)
 @Module({
   imports: [
@@ -26,18 +51,7 @@ import { UpdateBlogUseCase } from './blogs/application/use-cases/update-blog.use
     UserAccountsModule,
   ],
   controllers: [BlogsController, PostsController],
-  providers: [
-    BlogsService,
-    BlogsRepository,
-    BlogsQueryRepository,
-    PostsService,
-    PostsRepository,
-    PostsQueryRepository,
-    CreateBlogUseCase,
-    UpdateBlogUseCase,
-    GetBlogByIdQueryHandler,
-    GetBlogsQueryHandler,
-  ],
+  providers: [...repositories, ...services, ...useCases, ...handlers],
   exports: [BlogsRepository, PostsRepository],
 })
 export class BloggersPlatformModule {}

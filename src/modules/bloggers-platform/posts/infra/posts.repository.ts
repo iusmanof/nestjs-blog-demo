@@ -1,34 +1,29 @@
 import { Injectable } from '@nestjs/common';
-import { Model, Types } from 'mongoose';
-import { Post, PostDocument } from '../domain/posts.entity';
+import { Types } from 'mongoose';
+import { Post } from '../domain/posts.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreatePostDto } from '../api/input-dto/create-post.dto';
 import { CreatePostForBlogDto } from '../api/input-dto/create-post-for-blog.dto';
 import BlogsQueryRepository from '../../blogs/infra/blogs.query-repository';
+import type { PostDocument, PostModelType } from '../domain/posts.entity';
 
 @Injectable()
 class PostsRepository {
   constructor(
-    @InjectModel(Post.name) private readonly postModel: Model<PostDocument>,
+    @InjectModel(Post.name)
+    private readonly postModel: PostModelType,
     private readonly blogsQueryRepository: BlogsQueryRepository,
   ) {}
+
   async create(dto: CreatePostDto): Promise<PostDocument> {
     const blog = await this.blogsQueryRepository.getByIdOrNotFoundFail(
       dto.blogId,
     );
 
-    const post = new this.postModel({
-      title: dto.title,
-      shortDescription: dto.shortDescription,
-      content: dto.content,
-      blogId: dto.blogId,
-      blogName: blog.name,
-    });
-
-    await post.save();
-    return post;
+    return this.postModel.createInstance(dto, blog.name);
   }
-  async update(id: string, dto: CreatePostDto): Promise<boolean> {
+
+  async update(id: Types.ObjectId, dto: CreatePostDto): Promise<boolean> {
     const post = await this.postModel.updateOne(
       { _id: id },
       {
@@ -42,7 +37,7 @@ class PostsRepository {
     );
     return post.matchedCount === 1;
   }
-  async delete(id: string): Promise<boolean> {
+  async delete(id: Types.ObjectId): Promise<boolean> {
     const post = await this.postModel.deleteOne({ _id: id });
     return post.deletedCount === 1;
   }
@@ -68,6 +63,10 @@ class PostsRepository {
 
     await post.save();
     return post;
+  }
+
+  async save(post: PostDocument): Promise<void> {
+    await post.save();
   }
 
   async deleteAll() {

@@ -13,54 +13,67 @@ import {
 } from '@nestjs/common';
 import PostsService from '../application/posts.service';
 import { CreatePostDto } from './input-dto/create-post.dto';
-import { PostViewDto } from './view-dto/post-view.dto';
 import PostsQueryRepository from '../infra/posts.query-repository';
 import { PostsQueryParamsDto } from './input-dto/posts-query-params.dto';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { CreatePostCommand } from '../application/use-cases/create-post.usercase';
+import { Types } from 'mongoose';
+import { PostViewDto } from './view-dto/post-view.dto';
+import { GetPostByIdQuery } from '../application/queries/get-posts-by-id.query-handler';
+import { GetPostQuery } from '../application/queries/get-posts.query-handler';
+import { UpdatePostCommand } from '../application/use-cases/update-post.usercase';
 
 @Controller('posts')
 class PostsController {
   constructor(
+    // удалить позже
     private readonly postsService: PostsService,
     private readonly postQueryRepository: PostsQueryRepository,
+    // не удалять
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
   ) {}
-
-  @Get()
-  @HttpCode(HttpStatus.OK)
-  async getAllPosts(@Query() query: PostsQueryParamsDto) {
-    return await this.postQueryRepository.getAll(query);
-  }
-
-  @Get(':id')
-  @HttpCode(HttpStatus.OK)
-  async getPostById(@Param('id') id: string) {
-    return await this.postQueryRepository.getByIdOrNotFoundFail(id);
-  }
-
-  @Get(':postId/comments')
-  @HttpCode(HttpStatus.OK)
-  async getCommentsForPost(@Param('postId') postId: string) {
-    return await this.postQueryRepository.getByIdOrNotFoundFail(postId);
-  }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async createPost(@Body() dto: CreatePostDto) {
-    const post = await this.postsService.create(dto);
-    return PostViewDto.mapToView(post);
+    return await this.commandBus.execute<CreatePostCommand, PostViewDto>(
+      new CreatePostCommand(dto),
+    );
+  }
+
+  @Get(':id')
+  @HttpCode(HttpStatus.OK)
+  async getPostById(@Param('id') id: Types.ObjectId): Promise<PostViewDto> {
+    return this.queryBus.execute(new GetPostByIdQuery(id));
+  }
+
+  @Get()
+  @HttpCode(HttpStatus.OK)
+  async getAllPosts(@Query() query: PostsQueryParamsDto): Promise<PostViewDto> {
+    return this.queryBus.execute(new GetPostQuery(query));
   }
 
   @Put(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async updatePost(@Param('id') id: string, @Body() dto: CreatePostDto) {
-    const updatedPost = await this.postsService.update(id, dto);
-    if (!updatedPost) {
-      throw new NotFoundException(`Post not found`);
-    }
+  async updatePost(
+    @Param('id') id: Types.ObjectId,
+    @Body() dto: CreatePostDto,
+  ): Promise<PostViewDto> {
+    return this.commandBus.execute(new UpdatePostCommand(id, dto));
+  }
+
+  // ниже ревакторинг нужно сделать
+
+  @Get(':postId/comments')
+  @HttpCode(HttpStatus.OK)
+  async getCommentsForPost(@Param('postId') postId: Types.ObjectId) {
+    return await this.postQueryRepository.getByIdOrNotFoundFail(postId);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deletePost(@Param('id') id: string) {
+  async deletePost(@Param('id') id: Types.ObjectId) {
     const deletedPost = await this.postsService.delete(id);
     if (!deletedPost) {
       throw new NotFoundException(`Post not found`);
