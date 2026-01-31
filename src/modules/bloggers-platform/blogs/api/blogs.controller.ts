@@ -6,16 +6,13 @@ import {
   HttpCode,
   HttpStatus,
   InternalServerErrorException,
-  NotFoundException,
   Param,
   Post,
   Put,
   Query,
 } from '@nestjs/common';
-import BlogsService from '../application/blogs.service';
 import { CreateBlogDto } from './input-dto/create-blog.dto';
 import { CreatePostForBlogDto } from '../../posts/api/input-dto/create-post-for-blog.dto';
-import BlogsQueryRepository from '../infra/blogs.query-repository';
 import PostsQueryRepository from '../../posts/infra/posts.query-repository';
 import PostsService from '../../posts/application/posts.service';
 import { PostsQueryParamsDto } from '../../posts/api/input-dto/posts-query-params.dto';
@@ -28,15 +25,14 @@ import { GetBlogByIdQuery } from '../application/queries/get-blog-by-id.query-ha
 import { GetBlogsQuery } from '../application/queries/get-blogs.query-handler';
 import { UpdateBlogCommand } from '../application/use-cases/update-blog.usecase';
 import { UpdateBlogDto } from './input-dto/update-blog.dto';
+import { DeleteBlogCommand } from '../application/use-cases/delete-blog-use.case';
 
 @Controller('blogs')
 class BlogsController {
   constructor(
     // удалить
-    private readonly blogsService: BlogsService,
     private readonly postsService: PostsService,
     private readonly postQueryRepository: PostsQueryRepository,
-    private readonly blogQueryRepository: BlogsQueryRepository,
     // оставть
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
@@ -79,16 +75,15 @@ class BlogsController {
     );
   }
 
-  //  внизу все роуты на рефакторинг
-
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteBlog(@Param('id') id: Types.ObjectId) {
-    const deletedBlog = await this.blogsService.delete(id);
-    if (!deletedBlog) {
-      throw new NotFoundException('Blog not found');
-    }
+    return this.commandBus.execute<DeleteBlogCommand, void>(
+      new DeleteBlogCommand(id),
+    );
   }
+
+  //  внизу все роуты на рефакторинг
 
   @Get(':blogId/posts')
   @HttpCode(HttpStatus.OK)

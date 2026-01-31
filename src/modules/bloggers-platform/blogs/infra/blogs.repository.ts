@@ -2,27 +2,22 @@ import { Injectable } from '@nestjs/common';
 import { Blog, BlogDocument } from '../domain/blogs.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateBlogDto } from '../api/input-dto/create-blog.dto';
-import { Model, Types } from 'mongoose';
+import { Types } from 'mongoose';
+import type { BlogModelType } from '../domain/blogs.entity';
+import { UpdateBlogDto } from '../api/input-dto/update-blog.dto';
 
 @Injectable()
 class BlogsRepository {
   constructor(
-    @InjectModel(Blog.name) private readonly blogModel: Model<BlogDocument>,
+    @InjectModel(Blog.name)
+    private readonly blogModel: BlogModelType,
   ) {}
 
-  async create(dto: CreateBlogDto): Promise<BlogDocument> {
-    const blog = new this.blogModel({
-      name: dto.name,
-      description: dto.description,
-      websiteUrl: dto.websiteUrl,
-      isMembership: false,
-    });
-
-    await blog.save();
-    return blog;
+  create(dto: CreateBlogDto): BlogDocument {
+    return this.blogModel.createInstance(dto);
   }
 
-  async update(id: Types.ObjectId, dto: CreateBlogDto): Promise<boolean> {
+  async update(id: Types.ObjectId, dto: UpdateBlogDto): Promise<boolean> {
     const blog = await this.blogModel.updateOne(
       { _id: id },
       {
@@ -45,7 +40,7 @@ class BlogsRepository {
     await this.blogModel.deleteMany({});
   }
 
-  async save(entity: BlogDocument) {
+  async save(entity: BlogDocument): Promise<void> {
     await entity.save();
   }
 }
