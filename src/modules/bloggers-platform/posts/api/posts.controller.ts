@@ -66,8 +66,6 @@ class PostsController {
     return this.commandBus.execute(new DeletePostCommand(id));
   }
 
-  // ниже ревакторинг нужно сделать
-
   @Get(':postId/comments')
   @HttpCode(HttpStatus.OK)
   async getCommentsForPost(
