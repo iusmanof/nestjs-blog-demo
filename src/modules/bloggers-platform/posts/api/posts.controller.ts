@@ -11,7 +11,6 @@ import {
   Query,
 } from '@nestjs/common';
 import { CreatePostDto } from './input-dto/create-post.dto';
-import PostsQueryRepository from '../infra/posts.query-repository';
 import { PostsQueryParamsDto } from './input-dto/posts-query-params.dto';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreatePostCommand } from '../application/use-cases/create-post.usecase';
@@ -28,9 +27,6 @@ import { CommentsQueryParamsDto } from './input-dto/comments-query-params.dto';
 @Controller('posts')
 class PostsController {
   constructor(
-    // удалить позже
-    private readonly postQueryRepository: PostsQueryRepository,
-    // не удалять
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
   ) {}
