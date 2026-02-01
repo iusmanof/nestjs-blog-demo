@@ -38,11 +38,11 @@ class AuthService {
     return { id: user.id.toString() };
   }
 
-  async login(userId: string) {
-    return Promise.resolve({
-      accessToken: this.jwtService.sign({ id: userId }),
-    });
-  }
+  // async login(userId: string) {
+  //   return Promise.resolve({
+  //     accessToken: this.jwtService.sign({ id: userId }),
+  //   });
+  // }
 }
 
 export default AuthService;

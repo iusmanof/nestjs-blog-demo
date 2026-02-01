@@ -4,13 +4,13 @@ import {
   RegistrationUserInputDto,
 } from '../api/input-dto/create-user.dto';
 import UsersRepository from '../infra/users.repository';
-import { UserDocument } from '../domain/user.entity';
 import { UsersQueryRepository } from '../infra/users.query-repository';
 import { CryptoService } from './crypto.service';
 import { EmailService } from '../../notification/email.service';
 import { DomainException } from '../../../core/exceptions/filters/domain-exceptions';
 import { DomainExceptionCode } from '../../../core/exceptions/filters/domain-exception-codes';
 import { CodeGeneratorService } from './code-generator.service';
+import { UserDocument } from '../domain/user.entity';
 
 @Injectable()
 class UsersService {
