@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { CommentsQueryParamsDto } from '../api/input-dto/comments-query-params.dto';
 import { SortDirection } from '../../../../core/dto/base.query-params.dto';
 import { Comment, CommentDocument } from '../domain/comment.entity';
@@ -12,7 +12,7 @@ class CommentsQueryRepository {
     private readonly commentModel: Model<CommentDocument>,
   ) {}
 
-  async getByPostId(postId: Types.ObjectId, query: CommentsQueryParamsDto) {
+  async getByPostId(postId: string, query: CommentsQueryParamsDto) {
     const filter = { postId };
 
     const totalCount = await this.commentModel.countDocuments(filter);

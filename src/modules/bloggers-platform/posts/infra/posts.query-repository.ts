@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PostsQueryParamsDto } from '../api/input-dto/posts-query-params.dto';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { Post, PostDocument } from '../domain/posts.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import BlogQueryRepository from '../../blogs/infra/blogs.query-repository';
@@ -31,11 +31,11 @@ class PostsQueryRepository {
     };
   }
 
-  async findById(id: Types.ObjectId): Promise<PostDocument | null> {
+  async findById(id: string): Promise<PostDocument | null> {
     return this.postModel.findById(id).lean(); // просто ищет, не кидает исключение
   }
 
-  async getPostsForBlog(blogId: Types.ObjectId, query: PostsQueryParamsDto) {
+  async getPostsForBlog(blogId: string, query: PostsQueryParamsDto) {
     await this.blogsQueryRepository.getByIdOrNotFoundFail(blogId);
 
     const filter = { blogId };

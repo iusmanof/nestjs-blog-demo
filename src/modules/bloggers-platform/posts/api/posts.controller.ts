@@ -14,7 +14,6 @@ import { CreatePostDto } from './input-dto/create-post.dto';
 import { PostsQueryParamsDto } from './input-dto/posts-query-params.dto';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreatePostCommand } from '../application/use-cases/create-post.usecase';
-import { Types } from 'mongoose';
 import { PostViewDto } from './view-dto/post-view.dto';
 import { GetPostByIdQuery } from '../application/queries/get-posts-by-id.query-handler';
 import { GetPostQuery } from '../application/queries/get-posts.query-handler';
@@ -41,7 +40,7 @@ class PostsController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  async getPostById(@Param('id') id: Types.ObjectId): Promise<PostViewDto> {
+  async getPostById(@Param('id') id: string): Promise<PostViewDto> {
     return this.queryBus.execute(new GetPostByIdQuery(id));
   }
 
@@ -54,7 +53,7 @@ class PostsController {
   @Put(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async updatePost(
-    @Param('id') id: Types.ObjectId,
+    @Param('id') id: string,
     @Body() dto: CreatePostDto,
   ): Promise<PostViewDto> {
     return this.commandBus.execute(new UpdatePostCommand(id, dto));
@@ -62,7 +61,7 @@ class PostsController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deletePost(@Param('id') id: Types.ObjectId): Promise<void> {
+  async deletePost(@Param('id') id: string): Promise<void> {
     return this.commandBus.execute(new DeletePostCommand(id));
   }
 

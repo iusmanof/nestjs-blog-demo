@@ -31,7 +31,7 @@ class BlogsRepository {
     return blog.matchedCount === 1;
   }
 
-  async delete(id: Types.ObjectId): Promise<boolean> {
+  async delete(id: string): Promise<boolean> {
     const blog = await this.blogModel.deleteOne({ _id: id });
     return blog.deletedCount === 1;
   }

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Blog, BlogDocument } from '../domain/blogs.entity';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { BlogViewDto } from '../api/view-dto/blog-view.dto';
 import { BlogPaginatedViewDto } from '../api/view-dto/blog-paginated.view.dto';
 import { SortDirection } from '../../../../core/dto/base.query-params.dto';
@@ -45,7 +45,7 @@ class BlogQueryRepository {
     });
   }
 
-  async getByIdOrNotFoundFail(id: Types.ObjectId): Promise<BlogViewDto> {
+  async getByIdOrNotFoundFail(id: string): Promise<BlogViewDto> {
     const entity = await this.blogModel.findById(id);
     if (!entity) {
       throw new Error('Blog not found');
@@ -53,7 +53,7 @@ class BlogQueryRepository {
     return BlogViewDto.mapToView(entity);
   }
 
-  async findOrNotFoundFail(id: Types.ObjectId): Promise<BlogDocument> {
+  async findOrNotFoundFail(id: string): Promise<BlogDocument> {
     const entity = await this.blogModel.findById(id);
     if (!entity) {
       throw new NotFoundException('Blog not found');

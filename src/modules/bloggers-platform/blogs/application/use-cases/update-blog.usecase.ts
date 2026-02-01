@@ -1,5 +1,4 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { Types } from 'mongoose';
 import { UpdateBlogDto } from '../../api/input-dto/update-blog.dto';
 import BlogsRepository from '../../infra/blogs.repository';
 import BlogsQueryRepository from '../../infra/blogs.query-repository';
@@ -9,7 +8,7 @@ import BlogsQueryRepository from '../../infra/blogs.query-repository';
 
 export class UpdateBlogCommand {
   constructor(
-    public id: Types.ObjectId,
+    public id: string,
     public dto: UpdateBlogDto,
   ) {}
 }

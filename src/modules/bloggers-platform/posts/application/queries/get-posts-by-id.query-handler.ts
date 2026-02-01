@@ -1,11 +1,10 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { Types } from 'mongoose';
 import PostsQueryRepository from '../../infra/posts.query-repository';
 import { PostViewDto } from '../../api/view-dto/post-view.dto';
 import { NotFoundException } from '@nestjs/common';
 
 export class GetPostByIdQuery {
-  constructor(public id: Types.ObjectId) {}
+  constructor(public id: string) {}
 }
 
 @QueryHandler(GetPostByIdQuery)

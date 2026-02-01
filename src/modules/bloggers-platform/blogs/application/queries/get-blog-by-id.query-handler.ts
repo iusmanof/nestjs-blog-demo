@@ -1,12 +1,11 @@
-import { Types } from 'mongoose';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { BlogViewDto } from '../../api/view-dto/blog-view.dto';
 import BlogQueryRepository from '../../infra/blogs.query-repository';
 
 export class GetBlogByIdQuery {
   constructor(
-    public id: Types.ObjectId,
-    public userId: Types.ObjectId | null,
+    public id: string,
+    public userId: string | null,
   ) {}
 }
 

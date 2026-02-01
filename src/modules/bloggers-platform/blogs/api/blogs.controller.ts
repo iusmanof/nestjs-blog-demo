@@ -13,14 +13,11 @@ import {
 } from '@nestjs/common';
 import { CreateBlogDto } from './input-dto/create-blog.dto';
 import { CreatePostForBlogDto } from '../../posts/api/input-dto/create-post-for-blog.dto';
-import PostsQueryRepository from '../../posts/infra/posts.query-repository';
-import PostsService from '../../posts/application/posts.service';
 import { PostsQueryParamsDto } from '../../posts/api/input-dto/posts-query-params.dto';
 import { BlogsQueryParamsDto } from './input-dto/blogs-query-params.dto';
 import { BlogViewDto } from './view-dto/blog-view.dto';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateBlogCommand } from '../application/use-cases/create-blog.usecase';
-import { Types } from 'mongoose';
 import { GetBlogByIdQuery } from '../application/queries/get-blog-by-id.query-handler';
 import { GetBlogsQuery } from '../application/queries/get-blogs.query-handler';
 import { UpdateBlogCommand } from '../application/use-cases/update-blog.usecase';
@@ -32,10 +29,6 @@ import { CreatePostForBlogCommand } from '../application/use-cases/create-post-f
 @Controller('blogs')
 class BlogsController {
   constructor(
-    // удалить
-    private readonly postsService: PostsService,
-    private readonly postQueryRepository: PostsQueryRepository,
-    // оставть
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
   ) {}
@@ -48,7 +41,7 @@ class BlogsController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  getBlogById(@Param('id') id: Types.ObjectId) {
+  getBlogById(@Param('id') id: string) {
     return this.queryBus.execute(new GetBlogByIdQuery(id, null));
   }
 
@@ -56,10 +49,9 @@ class BlogsController {
   @HttpCode(HttpStatus.CREATED)
   async createBlog(@Body() dto: CreateBlogDto): Promise<BlogViewDto> {
     try {
-      const id = await this.commandBus.execute<
-        CreateBlogCommand,
-        Types.ObjectId
-      >(new CreateBlogCommand(dto));
+      const id = await this.commandBus.execute<CreateBlogCommand, string>(
+        new CreateBlogCommand(dto),
+      );
       return this.queryBus.execute(new GetBlogByIdQuery(id, null));
     } catch {
       throw new InternalServerErrorException();
@@ -69,7 +61,7 @@ class BlogsController {
   @Put(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async updateBlog(
-    @Param('id') id: Types.ObjectId,
+    @Param('id') id: string,
     @Body() dto: UpdateBlogDto,
   ): Promise<void> {
     return this.commandBus.execute<UpdateBlogCommand, void>(
@@ -79,7 +71,7 @@ class BlogsController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteBlog(@Param('id') id: Types.ObjectId) {
+  async deleteBlog(@Param('id') id: string) {
     return this.commandBus.execute<DeleteBlogCommand, void>(
       new DeleteBlogCommand(id),
     );

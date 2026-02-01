@@ -1,12 +1,11 @@
 import { ExtendedLikesInfo, PostDocument } from '../../domain/posts.entity';
-import { Types } from 'mongoose';
 
 export class PostViewDto {
   id: string;
   title: string;
   shortDescription: string;
   content: string;
-  blogId: Types.ObjectId;
+  blogId: string;
   blogName: string;
   createdAt: Date;
   extendedLikesInfo: ExtendedLikesInfo;
@@ -16,7 +15,7 @@ export class PostViewDto {
     title: post.title,
     shortDescription: post.shortDescription,
     content: post.content,
-    blogId: post.blogId,
+    blogId: post.blogId.toString(),
     blogName: post.blogName,
     createdAt: post.createdAt,
     extendedLikesInfo: {

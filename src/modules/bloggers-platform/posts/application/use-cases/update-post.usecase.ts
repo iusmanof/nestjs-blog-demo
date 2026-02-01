@@ -1,5 +1,4 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { Types } from 'mongoose';
 import { UpdatePostDto } from '../../api/input-dto/update-post.dto';
 import PostsRepository from '../../infra/posts.repository';
 import BlogsQueryRepository from '../../../blogs/infra/blogs.query-repository';
@@ -7,7 +6,7 @@ import { NotFoundException } from '@nestjs/common';
 
 export class UpdatePostCommand {
   constructor(
-    public id: Types.ObjectId,
+    public id: string,
     public dto: UpdatePostDto,
   ) {}
 }

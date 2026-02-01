@@ -1,10 +1,9 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { Types } from 'mongoose';
 import BlogsRepository from '../../infra/blogs.repository';
-import BlogQueryRepository from '../../infra/blogs.query-repository';
+import { NotFoundException } from '@nestjs/common';
 
 export class DeleteBlogCommand {
-  constructor(public id: Types.ObjectId) {}
+  constructor(public id: string) {}
 }
 
 @CommandHandler(DeleteBlogCommand)
@@ -12,13 +11,12 @@ export class DeleteBlogUseCase implements ICommandHandler<
   DeleteBlogCommand,
   void
 > {
-  constructor(
-    private readonly blogsRepository: BlogsRepository,
-    private readonly blogQueryRepository: BlogQueryRepository,
-  ) {}
+  constructor(private readonly blogsRepository: BlogsRepository) {}
 
   async execute({ id }: DeleteBlogCommand): Promise<void> {
-    await this.blogQueryRepository.findOrNotFoundFail(id);
-    await this.blogsRepository.delete(id);
+    const isDeleted = await this.blogsRepository.delete(id);
+    if (!isDeleted) {
+      throw new NotFoundException();
+    }
   }
 }

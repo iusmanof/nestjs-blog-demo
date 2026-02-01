@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { Types } from 'mongoose';
 import { Post } from '../domain/posts.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreatePostDto } from '../api/input-dto/create-post.dto';
@@ -24,7 +23,7 @@ class PostsRepository {
   }
 
   async update(
-    id: Types.ObjectId,
+    id: string,
     dto: CreatePostDto,
     blogName: string,
   ): Promise<boolean> {
@@ -36,14 +35,14 @@ class PostsRepository {
 
     return true;
   }
-  async delete(id: Types.ObjectId): Promise<boolean> {
+  async delete(id: string): Promise<boolean> {
     const result = await this.postModel.deleteOne({ _id: id });
     return result.deletedCount === 1;
   }
 
   async createForBlog(
     dto: CreatePostForBlogDto,
-    blogId: Types.ObjectId,
+    blogId: string,
     blogName: string,
   ): Promise<PostDocument> {
     const post = new this.postModel({

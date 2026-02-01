@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Model } from 'mongoose';
+import { CreateUserDto } from '../api/input-dto/create-user.dto';
 
 export const loginConstraints = {
   minLength: 3,
@@ -49,6 +50,14 @@ export class User {
 
   get id() {
     return this._id.toString();
+  }
+
+  static createInstance(dto: CreateUserDto): UserDocument {
+    const instance = new this() as UserDocument;
+    instance.login = dto.login;
+    instance.email = dto.email;
+    instance.passwordHash = dto.password;
+    return instance;
   }
 
   setConfirmationCode(code: string) {

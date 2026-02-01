@@ -1,5 +1,4 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { Types } from 'mongoose';
 import { Inject } from '@nestjs/common';
 import PostsQueryRepository from '../../../posts/infra/posts.query-repository';
 import { PostsQueryParamsDto } from '../../../posts/api/input-dto/posts-query-params.dto';
@@ -27,9 +26,8 @@ export class GetPostsForBlogQueryHandler implements IQueryHandler<
     blogId,
     queryParams,
   }: GetPostsForBlogQuery): Promise<PostPaginatedViewDto<PostViewDto>> {
-    const objectId = new Types.ObjectId(blogId);
     const { items, totalCount } =
-      await this.postsQueryRepository.getPostsForBlog(objectId, queryParams);
+      await this.postsQueryRepository.getPostsForBlog(blogId, queryParams);
 
     return {
       pagesCount: Math.ceil(totalCount / queryParams.pageSize),

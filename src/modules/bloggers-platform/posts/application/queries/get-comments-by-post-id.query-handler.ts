@@ -1,6 +1,5 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import PostsQueryRepository from '../../infra/posts.query-repository';
-import { Types } from 'mongoose';
 import CommentsQueryRepository from '../../infra/comments.query-repository';
 import { CommentsQueryParamsDto } from '../../api/input-dto/comments-query-params.dto';
 import { CommentViewDto } from '../../api/view-dto/comment-view.dto';
@@ -21,15 +20,13 @@ export class GetCommentsByPostIdQueryHandler implements IQueryHandler<GetComment
   ) {}
 
   async execute({ postId, queryParams }: GetCommentsByPostIdQuery) {
-    const objectId = new Types.ObjectId(postId);
-
-    const post = await this.postsQueryRepository.findById(objectId);
+    const post = await this.postsQueryRepository.findById(postId);
     if (!post) {
       throw new NotFoundException('Post not found');
     }
 
     const { items, totalCount } =
-      await this.commentsQueryRepository.getByPostId(objectId, queryParams);
+      await this.commentsQueryRepository.getByPostId(postId, queryParams);
 
     return {
       pagesCount: Math.ceil(totalCount / queryParams.pageSize),
