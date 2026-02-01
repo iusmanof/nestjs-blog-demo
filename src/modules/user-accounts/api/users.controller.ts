@@ -10,38 +10,40 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import UsersService from '../application/users.service';
 import { CreateUserDto } from './input-dto/create-user.dto';
-import { UsersQueryRepository } from '../infra/users.query-repository';
 import { UsersQueryParamsDto } from './input-dto/users-query-params.dto';
-import { UserViewDto } from './view-dto/user-view.dto';
 import { BasicAuthGuard } from '../guards/basic/basic-auth.guard';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { CreateUserCommand } from '../application/use-cases/create-user.usecase';
+import { DeleteUserCommand } from '../application/use-cases/delete-user.usecase';
+import { GetUsersQuery } from '../application/queries/get-users.query-handler';
 
 @UseGuards(BasicAuthGuard)
 @Controller('users')
 class UserController {
   constructor(
-    private readonly usersService: UsersService,
-    private readonly usersQueryRepository: UsersQueryRepository,
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
   ) {}
-
-  @Get()
-  @HttpCode(HttpStatus.OK)
-  getAllUsers(@Query() query: UsersQueryParamsDto) {
-    return this.usersQueryRepository.getAll(query);
-  }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async createUser(@Body() dto: CreateUserDto) {
-    const user = await this.usersService.create(dto);
-    return UserViewDto.mapToView(user);
+    return this.commandBus.execute<CreateUserCommand, CreateUserDto>(
+      new CreateUserCommand(dto),
+    );
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   deleteUser(@Param('id') id: string) {
-    return this.usersService.delete(id);
+    return this.commandBus.execute(new DeleteUserCommand(id));
+  }
+
+  @Get()
+  @HttpCode(HttpStatus.OK)
+  getAllUsers(@Query() query: UsersQueryParamsDto) {
+    return this.queryBus.execute(new GetUsersQuery(query));
   }
 }
 

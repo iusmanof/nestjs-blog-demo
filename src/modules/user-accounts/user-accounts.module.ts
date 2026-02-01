@@ -21,6 +21,10 @@ import { APP_GUARD } from '@nestjs/core';
 import { CoreModule } from '../../core/core.module';
 import { JwtStrategy } from './guards/bearer/jwt.stategy';
 import { CodeGeneratorService } from './application/code-generator.service';
+import { CreateUserUseCase } from './application/use-cases/create-user.usecase';
+import { CqrsModule } from '@nestjs/cqrs';
+import { DeleteUserUseCase } from './application/use-cases/delete-user.usecase';
+import { GetUsersQueryHandler } from './application/queries/get-users.query-handler';
 
 const services = [
   UsersService,
@@ -35,9 +39,12 @@ const repositories = [
   UsersExternalRepository,
 ];
 const strategies = [LocalStrategy, JwtStrategy];
+const useCases = [CreateUserUseCase, DeleteUserUseCase];
+const handlers = [GetUsersQueryHandler];
 
 @Module({
   imports: [
+    CqrsModule,
     CoreModule,
     PassportModule,
     ConfigModule,
@@ -59,6 +66,8 @@ const strategies = [LocalStrategy, JwtStrategy];
     ...services,
     ...repositories,
     ...strategies,
+    ...useCases,
+    ...handlers,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
