@@ -19,12 +19,16 @@ import { PasswordRecoveryDto } from './input-dto/password-recovery.dto';
 import { MeViewDto } from './view-dto/me-view.dto';
 import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../guards/bearer/jwt-auth.guard';
+import { CommandBus } from '@nestjs/cqrs';
+import { LoginCommand } from '../application/use-cases/login.usecase';
+import { RegisterUserCommand } from '../application/use-cases/register-user.usecase';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly usersService: UsersService,
+    private readonly commandBus: CommandBus,
   ) {}
 
   @Post('login')
@@ -33,13 +37,13 @@ export class AuthController {
   async login(
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<{ accessToken: string }> {
-    return this.authService.login(user.id);
+    return this.commandBus.execute(new LoginCommand(user.id));
   }
 
   @Post('registration')
   @HttpCode(HttpStatus.NO_CONTENT)
   async registration(@Body() body: RegistrationUserInputDto): Promise<void> {
-    return this.usersService.registerUser(body);
+    return this.commandBus.execute(new RegisterUserCommand(body));
   }
 
   @Post('registration-confirmation')

@@ -25,6 +25,8 @@ import { CreateUserUseCase } from './application/use-cases/create-user.usecase';
 import { CqrsModule } from '@nestjs/cqrs';
 import { DeleteUserUseCase } from './application/use-cases/delete-user.usecase';
 import { GetUsersQueryHandler } from './application/queries/get-users.query-handler';
+import { LoginUseCase } from './application/use-cases/login.usecase';
+import { RegisterUserUseCase } from './application/use-cases/register-user.usecase';
 
 const services = [
   UsersService,
@@ -39,7 +41,12 @@ const repositories = [
   UsersExternalRepository,
 ];
 const strategies = [LocalStrategy, JwtStrategy];
-const useCases = [CreateUserUseCase, DeleteUserUseCase];
+const useCases = [
+  CreateUserUseCase,
+  DeleteUserUseCase,
+  LoginUseCase,
+  RegisterUserUseCase,
+];
 const handlers = [GetUsersQueryHandler];
 
 @Module({
