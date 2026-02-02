@@ -12,14 +12,14 @@ class MailServiceMock {
   lastSentCode: string;
 
   // метод должен называться точно как в сервисе, который вызывается в UsersService
-  sendConfirmationEmail(email: string, code: string) {
-    this.lastSentCode = code;
+  async sendConfirmationEmail(email: string, code: string) {
+    await this.lastSentCode = code;
     console.log(`MOCK Email sent to ${email} code: ${code}`);
   }
 
   // можно оставить send, если где-то используется
-  send(to: string, subject: string, body: string) {
-    const match = body.match(/code=([\w-]+)/);
+  async send(to: string, subject: string, body: string) {
+    const match = await body.match(/code=([\w-]+)/);
     if (match) this.lastSentCode = match[1];
     console.log(
       `MOCK Email sent to ${to} subj: ${subject} code: ${this.lastSentCode}`,
@@ -32,10 +32,12 @@ describe('AuthController (e2e)', () => {
   let connection: Connection;
   let mailService: MailServiceMock;
   let usersQueryRepository: UsersQueryRepository;
-  let createdUserAccessToken;
+  let createdUserAccessToken: string;
+  let recoveryCode: string;
   const testLogin = 'user1';
   const testPassword = 'password123';
   const testEmail = 'user1@email.ma';
+  const testNewPassword = 'newPassword123!';
 
   beforeAll(async () => {
     const moduleFixture = await Test.createTestingModule({
@@ -148,6 +150,29 @@ describe('AuthController (e2e)', () => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const token = response.body.accessToken as string;
     const parts = token.split('.');
-    expect(parts.length).toBe(3); // JWT должен иметь 3 части
+    expect(parts.length).toBe(3);
+  });
+
+  it('[POST] /auth/password-recovery - should Password recovery via Email confirmation. Email should be sent with RecoveryCode inside', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    await request(app.getHttpServer())
+      .post('/auth/password-recovery')
+      .send({ email: testEmail })
+      .expect(204);
+
+    expect(mailService.lastSentCode).toBeDefined();
+    expect(typeof mailService.lastSentCode).toBe('string');
+
+    recoveryCode = mailService.lastSentCode;
+  });
+
+  it('[POST] /auth/new-password - should confirm Password recovery', async () => {
+    expect(recoveryCode).toBeDefined();
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    await request(app.getHttpServer())
+      .post('/auth/new-password')
+      .send({ newPassword: testPassword, recoveryCode: recoveryCode })
+      .expect(204);
   });
 });

@@ -29,6 +29,8 @@ import { LoginUseCase } from './application/use-cases/login.usecase';
 import { RegisterUserUseCase } from './application/use-cases/register-user.usecase';
 import { RegistrationConfirmationUseCase } from './application/use-cases/registration-confirmation.usecase';
 import { RegistrationEmailResendingUseCase } from './application/use-cases/registration-email-resending.usecase';
+import { NewPasswordUseCase } from './application/use-cases/new-password.usecase';
+import { PasswordRecoveryUseCase } from './application/use-cases/password-recovery.usecase';
 
 const services = [
   UsersService,
@@ -50,6 +52,8 @@ const useCases = [
   RegisterUserUseCase,
   RegistrationConfirmationUseCase,
   RegistrationEmailResendingUseCase,
+  NewPasswordUseCase,
+  PasswordRecoveryUseCase,
 ];
 const handlers = [GetUsersQueryHandler];
 

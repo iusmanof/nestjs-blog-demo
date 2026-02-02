@@ -24,6 +24,8 @@ import { LoginCommand } from '../application/use-cases/login.usecase';
 import { RegisterUserCommand } from '../application/use-cases/register-user.usecase';
 import { RegistrationConfirmationCommand } from '../application/use-cases/registration-confirmation.usecase';
 import { RegistrationEmailResendingCommand } from '../application/use-cases/registration-email-resending.usecase';
+import { NewPasswordCommand } from '../application/use-cases/new-password.usecase';
+import { PasswordRecoveryCommand } from '../application/use-cases/password-recovery.usecase';
 
 @Controller('auth')
 export class AuthController {
@@ -40,6 +42,19 @@ export class AuthController {
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<{ accessToken: string }> {
     return this.commandBus.execute(new LoginCommand(user.id));
+  }
+
+  @Post('password-recovery')
+  @Throttle({ default: { limit: 5, ttl: 1000 } })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async passwordRecovery(@Body() dto: PasswordRecoveryDto): Promise<void> {
+    return await this.commandBus.execute(new PasswordRecoveryCommand(dto));
+  }
+
+  @Post('new-password')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async setNewPassword(@Body() dto: NewPasswordDto): Promise<void> {
+    return await this.commandBus.execute(new NewPasswordCommand(dto));
   }
 
   @Post('registration-confirmation')
@@ -65,19 +80,6 @@ export class AuthController {
   }
 
   // refactoring nestjs/cqrs
-
-  @Post('new-password')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async setNewPassword(@Body() body: NewPasswordDto): Promise<void> {
-    await this.usersService.resetPassword(body);
-  }
-
-  @Post('password-recovery')
-  @Throttle({ default: { limit: 5, ttl: 1000 } })
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async passwordRecovery(@Body() body: PasswordRecoveryDto): Promise<void> {
-    await this.usersService.sendPasswordRecoveryCode(body.email);
-  }
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
