@@ -75,32 +75,32 @@ class UsersService {
   //   );
   // }
 
-  async resendConfirmationCode(email: string): Promise<void> {
-    const user = await this.usersQueryRepository.findByEmail(email);
-
-    if (!user) {
-      throw new DomainException({
-        code: DomainExceptionCode.BadRequest,
-        message: 'User not found',
-        extensions: [{ field: 'email', message: 'User not found' }],
-      });
-    }
-
-    if (!user.emailConfirmation || user.emailConfirmation.isConfirmed) {
-      throw new DomainException({
-        code: DomainExceptionCode.BadRequest,
-        message: 'Email already confirmed',
-        extensions: [{ field: 'email', message: 'Email already confirmed' }],
-      });
-    }
-
-    const newCode = Math.floor(100000 + Math.random() * 900000).toString();
-
-    user.setConfirmationCode(newCode);
-    await this.usersRepository.save(user);
-
-    await this.emailService.sendConfirmationEmail(user.email, newCode);
-  }
+  // async resendConfirmationCode(email: string): Promise<void> {
+  //   const user = await this.usersQueryRepository.findByEmail(email);
+  //
+  //   if (!user) {
+  //     throw new DomainException({
+  //       code: DomainExceptionCode.BadRequest,
+  //       message: 'User not found',
+  //       extensions: [{ field: 'email', message: 'User not found' }],
+  //     });
+  //   }
+  //
+  //   if (!user.emailConfirmation || user.emailConfirmation.isConfirmed) {
+  //     throw new DomainException({
+  //       code: DomainExceptionCode.BadRequest,
+  //       message: 'Email already confirmed',
+  //       extensions: [{ field: 'email', message: 'Email already confirmed' }],
+  //     });
+  //   }
+  //
+  //   const newCode = Math.floor(100000 + Math.random() * 900000).toString();
+  //
+  //   user.setConfirmationCode(newCode);
+  //   await this.usersRepository.save(user);
+  //
+  //   await this.emailService.sendConfirmationEmail(user.email, newCode);
+  // }
 
   // async confirmUserByEmailCode(code: string): Promise<void> {
   //   const user = await this.usersQueryRepository.findByConfirmationCode(code);

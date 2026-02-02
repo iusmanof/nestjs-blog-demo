@@ -23,6 +23,7 @@ import { CommandBus } from '@nestjs/cqrs';
 import { LoginCommand } from '../application/use-cases/login.usecase';
 import { RegisterUserCommand } from '../application/use-cases/register-user.usecase';
 import { RegistrationConfirmationCommand } from '../application/use-cases/registration-confirmation.usecase';
+import { RegistrationEmailResendingCommand } from '../application/use-cases/registration-email-resending.usecase';
 
 @Controller('auth')
 export class AuthController {
@@ -41,12 +42,6 @@ export class AuthController {
     return this.commandBus.execute(new LoginCommand(user.id));
   }
 
-  @Post('registration')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async registration(@Body() body: RegistrationUserInputDto): Promise<void> {
-    return this.commandBus.execute(new RegisterUserCommand(body));
-  }
-
   @Post('registration-confirmation')
   @HttpCode(HttpStatus.NO_CONTENT)
   async confirmRegistration(@Body('code') code: string): Promise<void> {
@@ -55,11 +50,21 @@ export class AuthController {
     );
   }
 
+  @Post('registration')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async registration(@Body() body: RegistrationUserInputDto): Promise<void> {
+    return this.commandBus.execute(new RegisterUserCommand(body));
+  }
+
   @Post('registration-email-resending')
   @HttpCode(HttpStatus.NO_CONTENT)
   async resendRegistrationEmail(@Body('email') email: string): Promise<void> {
-    await this.usersService.resendConfirmationCode(email);
+    return await this.commandBus.execute(
+      new RegistrationEmailResendingCommand(email),
+    );
   }
+
+  // refactoring nestjs/cqrs
 
   @Post('new-password')
   @HttpCode(HttpStatus.NO_CONTENT)
