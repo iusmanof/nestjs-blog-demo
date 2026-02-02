@@ -11,19 +11,20 @@ import { UsersQueryRepository } from '../src/modules/user-accounts/infra/users.q
 class MailServiceMock {
   lastSentCode: string;
 
-  // метод должен называться точно как в сервисе, который вызывается в UsersService
-  async sendConfirmationEmail(email: string, code: string) {
-    await this.lastSentCode = code;
+  async sendConfirmationEmail(email: string, code: string): Promise<void> {
+    this.lastSentCode = code;
     console.log(`MOCK Email sent to ${email} code: ${code}`);
+    return;
   }
 
-  // можно оставить send, если где-то используется
-  async send(to: string, subject: string, body: string) {
-    const match = await body.match(/code=([\w-]+)/);
+  async send(to: string, subject: string, body: string): Promise<void> {
+    const match = body.match(/code=([\w-]+)/);
     if (match) this.lastSentCode = match[1];
+
     console.log(
       `MOCK Email sent to ${to} subj: ${subject} code: ${this.lastSentCode}`,
     );
+    return;
   }
 }
 
@@ -153,7 +154,7 @@ describe('AuthController (e2e)', () => {
     expect(parts.length).toBe(3);
   });
 
-  it('[POST] /auth/password-recovery - should Password recovery via Email confirmation. Email should be sent with RecoveryCode inside', async () => {
+  it('[POST] /auth/password-recovery — should Password recovery via Email confirmation. Email should be sent with RecoveryCode inside', async () => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     await request(app.getHttpServer())
       .post('/auth/password-recovery')
@@ -166,7 +167,7 @@ describe('AuthController (e2e)', () => {
     recoveryCode = mailService.lastSentCode;
   });
 
-  it('[POST] /auth/new-password - should confirm Password recovery', async () => {
+  it('[POST] /auth/new-password — should confirm Password recovery', async () => {
     expect(recoveryCode).toBeDefined();
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -174,5 +175,21 @@ describe('AuthController (e2e)', () => {
       .post('/auth/new-password')
       .send({ newPassword: testPassword, recoveryCode: recoveryCode })
       .expect(204);
+  });
+
+  it('[GET] /auth/me — should return current user info', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    await request(app.getHttpServer())
+      .get('/auth/me')
+      .set('Authorization', `Bearer ${createdUserAccessToken}`)
+      .expect(200);
+  });
+
+  it('[GET] /auth/me — should return 401 for invalid JWT token', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    await request(app.getHttpServer())
+      .get('/auth/me')
+      .set('Authorization', 'Bearer invalid.jwt.token')
+      .expect(401);
   });
 });

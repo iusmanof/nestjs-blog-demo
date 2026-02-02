@@ -1,13 +1,11 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-// import { Connection } from 'mongoose';
 import createUserUtil, { UserView } from './utils/create-user.util';
 import { PaginatedResponse } from './utils/paginated-response';
 import { initApp } from './utils/helper';
 
 describe('UsersController (e2e)', () => {
   let app: INestApplication;
-  // let connection: Connection;
   let createdUserId: string;
 
   beforeAll(async () => {

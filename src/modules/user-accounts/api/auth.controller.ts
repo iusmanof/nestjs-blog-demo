@@ -4,7 +4,6 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  NotFoundException,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -19,13 +18,14 @@ import { PasswordRecoveryDto } from './input-dto/password-recovery.dto';
 import { MeViewDto } from './view-dto/me-view.dto';
 import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../guards/bearer/jwt-auth.guard';
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { LoginCommand } from '../application/use-cases/login.usecase';
 import { RegisterUserCommand } from '../application/use-cases/register-user.usecase';
 import { RegistrationConfirmationCommand } from '../application/use-cases/registration-confirmation.usecase';
 import { RegistrationEmailResendingCommand } from '../application/use-cases/registration-email-resending.usecase';
 import { NewPasswordCommand } from '../application/use-cases/new-password.usecase';
 import { PasswordRecoveryCommand } from '../application/use-cases/password-recovery.usecase';
+import { GetUserByIdQuery } from '../application/queries/get-user-by-id.query-handler';
 
 @Controller('auth')
 export class AuthController {
@@ -33,6 +33,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly usersService: UsersService,
     private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
   ) {}
 
   @Post('login')
@@ -79,18 +80,11 @@ export class AuthController {
     );
   }
 
-  // refactoring nestjs/cqrs
-
   @Get('me')
   @UseGuards(JwtAuthGuard)
   async getMe(
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<MeViewDto> {
-    const fullUser = await this.usersService.findById(user.id);
-
-    if (!fullUser) {
-      throw new NotFoundException('User not found');
-    }
-    return MeViewDto.map(fullUser);
+    return await this.queryBus.execute(new GetUserByIdQuery(user));
   }
 }

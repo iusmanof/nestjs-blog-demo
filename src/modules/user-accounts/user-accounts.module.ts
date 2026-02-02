@@ -31,6 +31,7 @@ import { RegistrationConfirmationUseCase } from './application/use-cases/registr
 import { RegistrationEmailResendingUseCase } from './application/use-cases/registration-email-resending.usecase';
 import { NewPasswordUseCase } from './application/use-cases/new-password.usecase';
 import { PasswordRecoveryUseCase } from './application/use-cases/password-recovery.usecase';
+import { GetUserByIdQueryHandler } from './application/queries/get-user-by-id.query-handler';
 
 const services = [
   UsersService,
@@ -55,7 +56,7 @@ const useCases = [
   NewPasswordUseCase,
   PasswordRecoveryUseCase,
 ];
-const handlers = [GetUsersQueryHandler];
+const handlers = [GetUsersQueryHandler, GetUserByIdQueryHandler];
 
 @Module({
   imports: [
