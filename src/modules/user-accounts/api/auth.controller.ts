@@ -22,6 +22,7 @@ import { JwtAuthGuard } from '../guards/bearer/jwt-auth.guard';
 import { CommandBus } from '@nestjs/cqrs';
 import { LoginCommand } from '../application/use-cases/login.usecase';
 import { RegisterUserCommand } from '../application/use-cases/register-user.usecase';
+import { RegistrationConfirmationCommand } from '../application/use-cases/registration-confirmation.usecase';
 
 @Controller('auth')
 export class AuthController {
@@ -49,7 +50,9 @@ export class AuthController {
   @Post('registration-confirmation')
   @HttpCode(HttpStatus.NO_CONTENT)
   async confirmRegistration(@Body('code') code: string): Promise<void> {
-    await this.usersService.confirmUserByEmailCode(code);
+    return await this.commandBus.execute(
+      new RegistrationConfirmationCommand(code),
+    );
   }
 
   @Post('registration-email-resending')

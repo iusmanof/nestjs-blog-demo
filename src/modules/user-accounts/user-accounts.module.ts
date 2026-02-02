@@ -27,6 +27,7 @@ import { DeleteUserUseCase } from './application/use-cases/delete-user.usecase';
 import { GetUsersQueryHandler } from './application/queries/get-users.query-handler';
 import { LoginUseCase } from './application/use-cases/login.usecase';
 import { RegisterUserUseCase } from './application/use-cases/register-user.usecase';
+import { RegistrationConfirmationUseCase } from './application/use-cases/registration-confirmation.usecase';
 
 const services = [
   UsersService,
@@ -46,6 +47,7 @@ const useCases = [
   DeleteUserUseCase,
   LoginUseCase,
   RegisterUserUseCase,
+  RegistrationConfirmationUseCase,
 ];
 const handlers = [GetUsersQueryHandler];
 
