@@ -1,16 +1,18 @@
-import {
-  createParamDecorator,
-  ExecutionContext,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { UserContextDto } from '../dto/user-context.dto';
+import { DomainException } from '../../../../core/exceptions/filters/domain-exceptions';
+import { DomainExceptionCode } from '../../../../core/exceptions/filters/domain-exception-codes';
 
 export const ExtractUserFromRequest = createParamDecorator(
   (_: unknown, ctx: ExecutionContext): UserContextDto => {
     const request = ctx.switchToHttp().getRequest<{ user?: UserContextDto }>();
 
     if (!request.user) {
-      throw new UnauthorizedException();
+      // throw new UnauthorizedException();
+      throw new DomainException({
+        code: DomainExceptionCode.Unauthorized,
+        message: 'User is not unauthorized',
+      });
     }
 
     return request.user;

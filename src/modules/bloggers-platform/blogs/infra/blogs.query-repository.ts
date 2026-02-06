@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Blog, BlogDocument } from '../domain/blogs.entity';
 import { Model } from 'mongoose';
@@ -6,6 +6,11 @@ import { BlogViewDto } from '../api/view-dto/blog-view.dto';
 import { BlogPaginatedViewDto } from '../api/view-dto/blog-paginated.view.dto';
 import { SortDirection } from '../../../../core/dto/base.query-params.dto';
 import { BlogsQueryParamsDto } from '../api/input-dto/blogs-query-params.dto';
+import {
+  DomainException,
+  Extension,
+} from '../../../../core/exceptions/filters/domain-exceptions';
+import { DomainExceptionCode } from '../../../../core/exceptions/filters/domain-exception-codes';
 
 @Injectable()
 class BlogQueryRepository {
@@ -48,8 +53,13 @@ class BlogQueryRepository {
   // TODO вынести NotFoundException и mapToView выше на уровень
   async getByIdOrNotFoundFail(id: string): Promise<BlogViewDto> {
     const entity = await this.blogModel.findById(id);
+
     if (!entity) {
-      throw new NotFoundException('Blog not found');
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        message: 'Blog not found',
+        extensions: [new Extension('Blog with given id does not exist', 'id')],
+      });
     }
     return BlogViewDto.mapToView(entity);
   }
@@ -57,7 +67,11 @@ class BlogQueryRepository {
   async findOrNotFoundFail(id: string): Promise<BlogDocument> {
     const entity = await this.blogModel.findById(id);
     if (!entity) {
-      throw new NotFoundException('Blog not found');
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        message: 'Blog not found',
+        extensions: [new Extension('Blog with given id does not exist', 'id')],
+      });
     }
     return entity;
   }

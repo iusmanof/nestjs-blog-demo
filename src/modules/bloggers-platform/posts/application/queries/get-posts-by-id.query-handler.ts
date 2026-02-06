@@ -1,7 +1,8 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import PostsQueryRepository from '../../infra/posts.query-repository';
 import { PostViewDto } from '../../api/view-dto/post-view.dto';
-import { NotFoundException } from '@nestjs/common';
+import { DomainException } from '../../../../../core/exceptions/filters/domain-exceptions';
+import { DomainExceptionCode } from '../../../../../core/exceptions/filters/domain-exception-codes';
 
 export class GetPostByIdQuery {
   constructor(
@@ -21,7 +22,10 @@ export class GetPostByIdQueryHandler implements IQueryHandler<GetPostByIdQuery> 
     );
 
     if (!post) {
-      throw new NotFoundException('Post not found');
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        message: 'Post not found',
+      });
     }
 
     return PostViewDto.mapToView(post);

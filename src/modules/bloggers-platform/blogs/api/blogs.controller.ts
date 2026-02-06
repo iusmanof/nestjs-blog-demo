@@ -5,7 +5,6 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  InternalServerErrorException,
   Param,
   Post,
   Put,
@@ -54,14 +53,18 @@ class BlogsController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async createBlog(@Body() dto: CreateBlogDto): Promise<BlogViewDto> {
-    try {
-      const id = await this.commandBus.execute<CreateBlogCommand, string>(
-        new CreateBlogCommand(dto),
-      );
-      return this.queryBus.execute(new GetBlogByIdQuery(id, null));
-    } catch {
-      throw new InternalServerErrorException();
-    }
+    const id = await this.commandBus.execute<CreateBlogCommand, string>(
+      new CreateBlogCommand(dto),
+    );
+    return this.queryBus.execute(new GetBlogByIdQuery(id, null));
+    // try {
+    //   const id = await this.commandBus.execute<CreateBlogCommand, string>(
+    //     new CreateBlogCommand(dto),
+    //   );
+    //   return this.queryBus.execute(new GetBlogByIdQuery(id, null));
+    // } catch {
+    //   throw new InternalServerErrorException();
+    // }
   }
 
   @UseGuards(BasicAuthGuard)

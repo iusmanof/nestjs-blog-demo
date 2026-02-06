@@ -1,6 +1,6 @@
 import { CookieOptions } from 'express';
 
-// TODO куда положить настрйоки
+// TODO куда положить настрйоки ???
 export const COOKIE_OPTIONS: CookieOptions = {
   httpOnly: true,
   secure: true,

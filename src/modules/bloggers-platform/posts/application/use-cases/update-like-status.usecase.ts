@@ -1,8 +1,9 @@
 import { UpdateLikeStatusDto } from '../../api/input-dto/update-like-status.dto';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import PostsRepository from '../../infra/posts.repository';
-import { NotFoundException, UnauthorizedException } from '@nestjs/common';
 import PostsQueryRepository from '../../infra/posts.query-repository';
+import { DomainException } from '../../../../../core/exceptions/filters/domain-exceptions';
+import { DomainExceptionCode } from '../../../../../core/exceptions/filters/domain-exception-codes';
 
 export class UpdateLikeStatusCommand {
   constructor(
@@ -21,12 +22,20 @@ export class UpdateLikeStatusUseCase implements ICommandHandler<UpdateLikeStatus
   ) {}
   async execute(command: UpdateLikeStatusCommand): Promise<any> {
     if (!command.userId) {
-      throw new UnauthorizedException('User not found');
+      // throw new UnauthorizedException('User not found');
+      throw new DomainException({
+        code: DomainExceptionCode.Unauthorized,
+        message: 'User not found',
+      });
     }
 
     const post = await this.postsQueryRepository.findById(command.postId);
     if (!post) {
-      throw new NotFoundException('Post not found');
+      // throw new NotFoundException('Post not found');
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        message: 'Post not found',
+      });
     }
     return await this.postsRepository.setLikeStatus(
       command.userId,

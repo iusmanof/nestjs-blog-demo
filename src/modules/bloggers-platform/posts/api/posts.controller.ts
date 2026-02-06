@@ -29,6 +29,7 @@ import { UpdateLikeStatusDto } from './input-dto/update-like-status.dto';
 import { JwtAuthGuard } from '../../../../core/guards/bearer/jwt-auth.guard';
 import type { AuthenticatedRequest } from '../../../../core/types/authenticated-request.interface';
 import { OptionalJwtAuthGuard } from '../../../../core/guards/optional-jwt-auth.guard';
+import { BasicAuthGuard } from '../../../../core/guards/basic/basic-auth.guard';
 
 @Controller('posts')
 class PostsController {
@@ -37,6 +38,7 @@ class PostsController {
     private readonly queryBus: QueryBus,
   ) {}
 
+  @UseGuards(BasicAuthGuard)
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async createPost(@Body() dto: CreatePostDto) {
@@ -78,6 +80,7 @@ class PostsController {
     return this.queryBus.execute(new GetPostQuery(query, userId));
   }
 
+  @UseGuards(BasicAuthGuard)
   @Put(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async updatePost(
@@ -86,7 +89,7 @@ class PostsController {
   ): Promise<PostViewDto> {
     return this.commandBus.execute(new UpdatePostCommand(id, dto));
   }
-
+  @UseGuards(BasicAuthGuard)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deletePost(@Param('id') id: string): Promise<void> {

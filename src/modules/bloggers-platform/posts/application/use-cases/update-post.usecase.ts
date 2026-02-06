@@ -2,7 +2,8 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UpdatePostDto } from '../../api/input-dto/update-post.dto';
 import PostsRepository from '../../infra/posts.repository';
 import BlogsQueryRepository from '../../../blogs/infra/blogs.query-repository';
-import { NotFoundException } from '@nestjs/common';
+import { DomainException } from '../../../../../core/exceptions/filters/domain-exceptions';
+import { DomainExceptionCode } from '../../../../../core/exceptions/filters/domain-exception-codes';
 
 export class UpdatePostCommand {
   constructor(
@@ -28,7 +29,10 @@ export class UpdatePostUsecase implements ICommandHandler<UpdatePostCommand> {
     );
 
     if (!updated) {
-      throw new NotFoundException('Post not found');
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        message: 'Post not found',
+      });
     }
   }
 }

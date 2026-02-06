@@ -1,11 +1,8 @@
 import { Reflector } from '@nestjs/core';
-import {
-  CanActivate,
-  ExecutionContext,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Request } from 'express';
+import { DomainException } from '../../exceptions/filters/domain-exceptions';
+import { DomainExceptionCode } from '../../exceptions/filters/domain-exception-codes';
 
 @Injectable()
 export class BasicAuthGuard implements CanActivate {
@@ -26,10 +23,16 @@ export class BasicAuthGuard implements CanActivate {
       return true;
     }
 
+    // if (!authHeader || !authHeader.startsWith('Basic ')) {
+    //   throw new UnauthorizedException(
+    //     'Authorization header missing or invalid',
+    //   );
+    // }
     if (!authHeader || !authHeader.startsWith('Basic ')) {
-      throw new UnauthorizedException(
-        'Authorization header missing or invalid',
-      );
+      throw new DomainException({
+        code: DomainExceptionCode.Unauthorized,
+        message: 'Authorization header missing or invalid',
+      });
     }
 
     const base64Credentials = authHeader.split(' ')[1];
@@ -39,7 +42,11 @@ export class BasicAuthGuard implements CanActivate {
     const [username, password] = credentials.split(':');
 
     if (username !== this.validUsername || password !== this.validPassword) {
-      throw new UnauthorizedException('Invalid credentials');
+      // throw new UnauthorizedException('Invalid credentials');
+      throw new DomainException({
+        code: DomainExceptionCode.Unauthorized,
+        message: 'Invalid credentials',
+      });
     }
 
     return true;
