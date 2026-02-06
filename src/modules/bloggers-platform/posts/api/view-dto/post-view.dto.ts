@@ -1,4 +1,18 @@
-import { ExtendedLikesInfo, PostDocument } from '../../domain/posts.entity';
+import { LikeStatus } from '../../../../../core/types/like-status.type';
+import { PostDocument } from '../../domain/posts.entity';
+
+export type ExtendedLikesInfoViewDto = {
+  likesCount: number;
+  dislikesCount: number;
+  myStatus: LikeStatus;
+  newestLikes: NewestLikeViewDto[];
+};
+
+export type NewestLikeViewDto = {
+  userId: string;
+  login: string;
+  addedAt: Date;
+};
 
 export class PostViewDto {
   id: string;
@@ -8,7 +22,7 @@ export class PostViewDto {
   blogId: string;
   blogName: string;
   createdAt: Date;
-  extendedLikesInfo: ExtendedLikesInfo;
+  extendedLikesInfo: ExtendedLikesInfoViewDto;
 
   static mapToView = (post: PostDocument): PostViewDto => ({
     id: post._id.toString(),
@@ -22,7 +36,16 @@ export class PostViewDto {
       likesCount: post.extendedLikesInfo.likesCount,
       dislikesCount: post.extendedLikesInfo.dislikesCount,
       myStatus: post.extendedLikesInfo.myStatus,
-      newestLikes: post.extendedLikesInfo.newestLikes,
+      newestLikes: post.extendedLikesInfo.newestLikes
+        .filter((like) => like.status === 'Like')
+        .slice(0, 3)
+        .map(
+          (like): NewestLikeViewDto => ({
+            userId: like.userId,
+            login: like.login,
+            addedAt: like.addedAt,
+          }),
+        ),
     },
   });
 }

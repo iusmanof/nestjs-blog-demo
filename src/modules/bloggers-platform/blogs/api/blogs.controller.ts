@@ -10,6 +10,8 @@ import {
   Post,
   Put,
   Query,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { CreateBlogDto } from './input-dto/create-blog.dto';
 import { CreatePostForBlogDto } from '../../posts/api/input-dto/create-post-for-blog.dto';
@@ -25,6 +27,9 @@ import { UpdateBlogDto } from './input-dto/update-blog.dto';
 import { DeleteBlogCommand } from '../application/use-cases/delete-blog-use.case';
 import { GetPostsForBlogQuery } from '../application/queries/get-posts-for-blog.query-handler';
 import { CreatePostForBlogCommand } from '../application/use-cases/create-post-for-blog.usecase';
+import { BasicAuthGuard } from '../../../../core/guards/basic/basic-auth.guard';
+import { OptionalJwtAuthGuard } from '../../../../core/guards/optional-jwt-auth.guard';
+import type { AuthenticatedRequest } from '../../../../core/types/authenticated-request.interface';
 
 @Controller('blogs')
 class BlogsController {
@@ -45,6 +50,7 @@ class BlogsController {
     return this.queryBus.execute(new GetBlogByIdQuery(id, null));
   }
 
+  @UseGuards(BasicAuthGuard)
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async createBlog(@Body() dto: CreateBlogDto): Promise<BlogViewDto> {
@@ -58,6 +64,7 @@ class BlogsController {
     }
   }
 
+  @UseGuards(BasicAuthGuard)
   @Put(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async updateBlog(
@@ -69,6 +76,7 @@ class BlogsController {
     );
   }
 
+  @UseGuards(BasicAuthGuard)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteBlog(@Param('id') id: string) {
@@ -77,15 +85,21 @@ class BlogsController {
     );
   }
 
+  @UseGuards(OptionalJwtAuthGuard)
   @Get(':blogId/posts')
   @HttpCode(HttpStatus.OK)
   getAllPostsForBlog(
     @Param('blogId') blogId: string,
     @Query() query: PostsQueryParamsDto,
+    @Req() req: AuthenticatedRequest,
   ) {
-    return this.queryBus.execute(new GetPostsForBlogQuery(blogId, query));
+    const userId = req.user?.id;
+    return this.queryBus.execute(
+      new GetPostsForBlogQuery(blogId, query, userId),
+    );
   }
 
+  @UseGuards(BasicAuthGuard)
   @Post(':blogId/posts')
   @HttpCode(HttpStatus.CREATED)
   createPostForBlog(

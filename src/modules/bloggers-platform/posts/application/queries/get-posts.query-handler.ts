@@ -5,7 +5,10 @@ import { PostPaginatedViewDto } from '../../api/view-dto/post-paginated.view.dto
 import { PostViewDto } from '../../api/view-dto/post-view.dto';
 
 export class GetPostQuery {
-  constructor(public queryParams: PostsQueryParamsDto) {}
+  constructor(
+    public queryParams: PostsQueryParamsDto,
+    public userId?: string,
+  ) {}
 }
 
 @QueryHandler(GetPostQuery)
@@ -18,6 +21,8 @@ export class GetPostQueryHandler implements IQueryHandler<GetPostQuery> {
     const { items, totalCount } = await this.postsQueryRepository.getAll(
       query.queryParams,
     );
+
+    items.forEach((post) => post.computeExtendedLikesInfo(query.userId));
 
     return PostPaginatedViewDto.mapToView({
       items: items.map(PostViewDto.mapToView),

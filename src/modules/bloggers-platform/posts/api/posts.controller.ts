@@ -9,6 +9,8 @@ import {
   Post,
   Put,
   Query,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { CreatePostDto } from './input-dto/create-post.dto';
 import { PostsQueryParamsDto } from './input-dto/posts-query-params.dto';
@@ -22,6 +24,11 @@ import { DeletePostCommand } from '../application/use-cases/delete-post.usecase'
 import { GetCommentsByPostIdQuery } from '../application/queries/get-comments-by-post-id.query-handler';
 import { CommentViewDto } from './view-dto/comment-view.dto';
 import { CommentsQueryParamsDto } from './input-dto/comments-query-params.dto';
+import { UpdateLikeStatusCommand } from '../application/use-cases/update-like-status.usecase';
+import { UpdateLikeStatusDto } from './input-dto/update-like-status.dto';
+import { JwtAuthGuard } from '../../../../core/guards/bearer/jwt-auth.guard';
+import type { AuthenticatedRequest } from '../../../../core/types/authenticated-request.interface';
+import { OptionalJwtAuthGuard } from '../../../../core/guards/optional-jwt-auth.guard';
 
 @Controller('posts')
 class PostsController {
@@ -38,16 +45,37 @@ class PostsController {
     );
   }
 
+  @UseGuards(OptionalJwtAuthGuard)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  async getPostById(@Param('id') id: string): Promise<PostViewDto> {
-    return this.queryBus.execute(new GetPostByIdQuery(id));
+  async getPostById(
+    @Param('id') id: string,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<PostViewDto> {
+    const userId = req.user?.id;
+    return this.queryBus.execute(new GetPostByIdQuery(id, userId));
   }
 
+  @Get(':postId/comments')
+  @HttpCode(HttpStatus.OK)
+  async getCommentsForPost(
+    @Param('postId') postId: string,
+    @Query() query: CommentsQueryParamsDto,
+  ): Promise<CommentViewDto> {
+    return await this.queryBus.execute(
+      new GetCommentsByPostIdQuery(postId, query),
+    );
+  }
+
+  @UseGuards(OptionalJwtAuthGuard)
   @Get()
   @HttpCode(HttpStatus.OK)
-  async getAllPosts(@Query() query: PostsQueryParamsDto): Promise<PostViewDto> {
-    return this.queryBus.execute(new GetPostQuery(query));
+  async getAllPosts(
+    @Query() query: PostsQueryParamsDto,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<PostViewDto> {
+    const userId = req.user?.id;
+    return this.queryBus.execute(new GetPostQuery(query, userId));
   }
 
   @Put(':id')
@@ -65,13 +93,19 @@ class PostsController {
     return this.commandBus.execute(new DeletePostCommand(id));
   }
 
-  @Get(':postId/comments')
-  @HttpCode(HttpStatus.OK)
-  async getCommentsForPost(
+  @UseGuards(JwtAuthGuard)
+  @Put(':postId/like-status')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async updateLikeStatus(
     @Param('postId') postId: string,
-    @Query() query: CommentsQueryParamsDto,
-  ): Promise<CommentViewDto> {
-    return this.queryBus.execute(new GetCommentsByPostIdQuery(postId, query));
+    @Body() dto: UpdateLikeStatusDto,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<void> {
+    const userId = req.user?.id;
+    const login = req.user?.login;
+    return this.commandBus.execute(
+      new UpdateLikeStatusCommand(userId, postId, login, dto),
+    );
   }
 }
 

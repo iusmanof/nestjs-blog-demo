@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import type { Response as ExpressResponse } from 'express';
 import { UserContextDto } from '../guards/dto/user-context.dto';
 import { CryptoService } from './crypto.service';
 import { UsersQueryRepository } from '../infra/users.query-repository';
 import { JwtService } from '@nestjs/jwt';
+import { COOKIE_OPTIONS } from '../cookie/auth-cookie.config';
 
 @Injectable()
 class AuthService {
@@ -11,6 +13,10 @@ class AuthService {
     private jwtService: JwtService,
     private cryptoService: CryptoService,
   ) {}
+
+  setRefreshToken(res: ExpressResponse, token: string) {
+    res.cookie('refreshToken', token, COOKIE_OPTIONS);
+  }
 
   async validateUser(
     login: string,
@@ -35,7 +41,7 @@ class AuthService {
       return null;
     }
 
-    return { id: user.id.toString() };
+    return { id: user.id.toString(), login: user.login };
   }
 
   // async login(userId: string) {

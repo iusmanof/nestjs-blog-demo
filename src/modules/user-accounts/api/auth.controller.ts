@@ -5,19 +5,18 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Res,
   UseGuards,
 } from '@nestjs/common';
-import UsersService from '../application/users.service';
 import { LocalAuthGuard } from '../guards/local/local-auth.guard';
 import { UserContextDto } from '../guards/dto/user-context.dto';
-import AuthService from '../application/auth.service';
 import { ExtractUserFromRequest } from '../guards/decorators/extract-user-from-request.decorator';
 import { RegistrationUserInputDto } from './input-dto/create-user.dto';
 import { NewPasswordDto } from './input-dto/new-password.dto';
 import { PasswordRecoveryDto } from './input-dto/password-recovery.dto';
 import { MeViewDto } from './view-dto/me-view.dto';
-import { Throttle } from '@nestjs/throttler';
-import { JwtAuthGuard } from '../guards/bearer/jwt-auth.guard';
+import { SkipThrottle, Throttle } from '@nestjs/throttler';
+import { JwtAuthGuard } from '../../../core/guards/bearer/jwt-auth.guard';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { LoginCommand } from '../application/use-cases/login.usecase';
 import { RegisterUserCommand } from '../application/use-cases/register-user.usecase';
@@ -26,23 +25,24 @@ import { RegistrationEmailResendingCommand } from '../application/use-cases/regi
 import { NewPasswordCommand } from '../application/use-cases/new-password.usecase';
 import { PasswordRecoveryCommand } from '../application/use-cases/password-recovery.usecase';
 import { GetUserByIdQuery } from '../application/queries/get-user-by-id.query-handler';
+import type { Response as ExpressResponse } from 'express';
 
 @Controller('auth')
 export class AuthController {
   constructor(
-    private readonly authService: AuthService,
-    private readonly usersService: UsersService,
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
   ) {}
 
+  @SkipThrottle()
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @UseGuards(LocalAuthGuard)
   async login(
     @ExtractUserFromRequest() user: UserContextDto,
+    @Res({ passthrough: true }) res: ExpressResponse,
   ): Promise<{ accessToken: string }> {
-    return this.commandBus.execute(new LoginCommand(user.id));
+    return this.commandBus.execute(new LoginCommand(user.id, res));
   }
 
   @Post('password-recovery')

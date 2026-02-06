@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ConfigService } from '@nestjs/config';
-import { UsersQueryRepository } from '../../infra/users.query-repository';
-import { UserContextDto } from '../dto/user-context.dto';
-import { DomainException } from '../../../../core/exceptions/filters/domain-exceptions';
-import { DomainExceptionCode } from '../../../../core/exceptions/filters/domain-exception-codes';
+import { UsersQueryRepository } from '../../../modules/user-accounts/infra/users.query-repository';
+import { UserContextDto } from '../../../modules/user-accounts/guards/dto/user-context.dto';
+import { DomainException } from '../../exceptions/filters/domain-exceptions';
+import { DomainExceptionCode } from '../../exceptions/filters/domain-exception-codes';
 import { Strategy, ExtractJwt } from 'passport-jwt';
-import { UserDocument } from '../../domain/user.entity';
+import { UserDocument } from '../../../modules/user-accounts/domain/user.entity';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -34,6 +34,9 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       });
     }
 
-    return { id: user.id.toString() };
+    return {
+      id: user.id.toString(),
+      login: user.login,
+    };
   }
 }

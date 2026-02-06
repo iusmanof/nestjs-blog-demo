@@ -11,27 +11,27 @@ import { DomainExceptionCode } from '../core/exceptions/filters/domain-exception
 
 export const errorFormatter = (
   errors: ValidationError[],
-  errorMessage?: Extension[], // вместо any
+  acc: Extension[] = [],
 ): Extension[] => {
-  const errorsForResponse: Extension[] = errorMessage || [];
   for (const error of errors) {
     if (!error.constraints && error.children?.length) {
-      errorFormatter(error.children, errorsForResponse);
-    } else if (error.constraints) {
-      const constrainKeys = Object.keys(error.constraints);
+      errorFormatter(error.children, acc);
+      continue;
+    }
 
-      for (const key of constrainKeys) {
-        errorsForResponse.push({
-          message: error.constraints[key]
-            ? `${error.constraints[key]}; Received value: ${error?.value}`
-            : '',
-          field: error.property,
-        });
-      }
+    if (error.constraints) {
+      if (acc.some((e) => e.field === error.property)) continue;
+
+      const firstKey = Object.keys(error.constraints)[0];
+
+      acc.push({
+        message: error.constraints[firstKey],
+        field: error.property,
+      });
     }
   }
 
-  return errorsForResponse;
+  return acc;
 };
 
 export function pipesSetup(app: INestApplication) {

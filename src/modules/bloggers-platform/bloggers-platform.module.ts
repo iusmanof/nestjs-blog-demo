@@ -26,6 +26,7 @@ import { CreatePostForBlogUseCase } from './blogs/application/use-cases/create-p
 import { GetPostsForBlogQueryHandler } from './blogs/application/queries/get-posts-for-blog.query-handler';
 import CommentsQueryRepository from './posts/infra/comments.query-repository';
 import { Comment, CommentSchema } from './posts/domain/comment.entity';
+import { UpdateLikeStatusUseCase } from './posts/application/use-cases/update-like-status.usecase';
 
 const repositories = [
   BlogsRepository,
@@ -42,6 +43,7 @@ const useCases = [
   UpdatePostUsecase,
   DeletePostUseCase,
   CreatePostForBlogUseCase,
+  UpdateLikeStatusUseCase,
 ];
 const handlers = [
   GetBlogByIdQueryHandler,

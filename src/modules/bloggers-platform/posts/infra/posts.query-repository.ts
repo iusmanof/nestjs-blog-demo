@@ -22,8 +22,8 @@ class PostsQueryRepository {
       .find()
       .sort({ [sortField]: sortOrder })
       .skip(query.calculateSkip())
-      .limit(query.pageSize)
-      .lean();
+      .limit(query.pageSize);
+    // .lean();
 
     return {
       totalCount,
@@ -32,7 +32,17 @@ class PostsQueryRepository {
   }
 
   async findById(id: string): Promise<PostDocument | null> {
-    return this.postModel.findById(id).lean(); // просто ищет, не кидает исключение
+    return await this.postModel.findById(id).exec();
+  }
+
+  async findByIdWithRequestingUser(
+    postId: string,
+    currentUserId?: string,
+  ): Promise<PostDocument | null> {
+    const post = await this.postModel.findById(postId);
+    if (!post) return null;
+    post.computeExtendedLikesInfo(currentUserId);
+    return post;
   }
 
   async getPostsForBlog(blogId: string, query: PostsQueryParamsDto) {
@@ -48,8 +58,8 @@ class PostsQueryRepository {
         [query.sortBy]: query.sortDirection === SortDirection.Asc ? 1 : -1,
       })
       .skip(query.calculateSkip())
-      .limit(query.pageSize)
-      .lean();
+      .limit(query.pageSize);
+    // .lean();
 
     return {
       totalCount,

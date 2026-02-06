@@ -19,7 +19,7 @@ import { NotificationModule } from '../notification/notification.module';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { CoreModule } from '../../core/core.module';
-import { JwtStrategy } from './guards/bearer/jwt.stategy';
+import { JwtStrategy } from '../../core/guards/bearer/jwt.stategy';
 import { CodeGeneratorService } from './application/code-generator.service';
 import { CreateUserUseCase } from './application/use-cases/create-user.usecase';
 import { CqrsModule } from '@nestjs/cqrs';
@@ -71,9 +71,9 @@ const handlers = [GetUsersQueryHandler, GetUserByIdQueryHandler];
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         secret: config.get<string>('JWT_SECRET'),
-        signOptions: {
-          expiresIn: '300s',
-        },
+        // signOptions: {
+        //   expiresIn: '300s',
+        // },
       }),
     }),
   ],

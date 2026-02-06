@@ -45,10 +45,11 @@ class BlogQueryRepository {
     });
   }
 
+  // TODO вынести NotFoundException и mapToView выше на уровень
   async getByIdOrNotFoundFail(id: string): Promise<BlogViewDto> {
     const entity = await this.blogModel.findById(id);
     if (!entity) {
-      throw new Error('Blog not found');
+      throw new NotFoundException('Blog not found');
     }
     return BlogViewDto.mapToView(entity);
   }

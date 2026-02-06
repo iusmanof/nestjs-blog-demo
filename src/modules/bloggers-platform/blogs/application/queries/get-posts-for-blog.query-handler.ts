@@ -9,6 +9,7 @@ export class GetPostsForBlogQuery {
   constructor(
     public blogId: string,
     public queryParams: PostsQueryParamsDto,
+    public userId?: string,
   ) {}
 }
 
@@ -25,9 +26,14 @@ export class GetPostsForBlogQueryHandler implements IQueryHandler<
   async execute({
     blogId,
     queryParams,
+    userId,
   }: GetPostsForBlogQuery): Promise<PostPaginatedViewDto<PostViewDto>> {
     const { items, totalCount } =
       await this.postsQueryRepository.getPostsForBlog(blogId, queryParams);
+
+    items.forEach((post) => {
+      post.computeExtendedLikesInfo(userId);
+    });
 
     return {
       pagesCount: Math.ceil(totalCount / queryParams.pageSize),

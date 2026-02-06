@@ -24,6 +24,7 @@ export class CreatePostForBlogUseCase implements ICommandHandler<
   async execute(command: CreatePostForBlogCommand): Promise<PostViewDto> {
     const { blogId, dto } = command;
     const blog = await this.blogsQueryRepository.getByIdOrNotFoundFail(blogId);
+
     const blogName = blog.name;
 
     const post = await this.postsRepository.createForBlog(

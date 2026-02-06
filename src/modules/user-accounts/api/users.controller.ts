@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { CreateUserDto } from './input-dto/create-user.dto';
 import { UsersQueryParamsDto } from './input-dto/users-query-params.dto';
-import { BasicAuthGuard } from '../guards/basic/basic-auth.guard';
+import { BasicAuthGuard } from '../../../core/guards/basic/basic-auth.guard';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateUserCommand } from '../application/use-cases/create-user.usecase';
 import { DeleteUserCommand } from '../application/use-cases/delete-user.usecase';

@@ -4,17 +4,18 @@ import { CreatePostDto } from '../api/input-dto/create-post.dto';
 import { UpdatePostDto } from '../api/input-dto/update-post.dto';
 import { LikeStatus } from '../../../../core/types/like-status.type';
 
+export class NewestLike {
+  addedAt: Date;
+  userId: string;
+  login: string;
+  status: LikeStatus;
+}
+
 export class ExtendedLikesInfo {
   likesCount: number;
   dislikesCount: number;
   myStatus: LikeStatus;
-  newestLikes: NewestLikes[];
-}
-
-export class NewestLikes {
-  addedAt: Date;
-  userId: string;
-  login: string;
+  newestLikes: NewestLike[];
 }
 
 @Schema({ timestamps: { createdAt: true, updatedAt: false } })
@@ -52,6 +53,7 @@ export class Post {
           addedAt: { type: Date },
           userId: { type: String },
           login: { type: String },
+          status: { type: String },
         },
       ],
     },
@@ -69,7 +71,6 @@ export class Post {
     post.content = dto.content;
     post.blogId = dto.blogId;
     post.blogName = blogName;
-
     post.extendedLikesInfo = {
       likesCount: 0,
       dislikesCount: 0,
@@ -87,12 +88,70 @@ export class Post {
     this.blogId = dto.blogId;
     this.blogName = blogName;
   }
+
+  computeExtendedLikesInfo(currentUserId?: string) {
+    const extended = this.extendedLikesInfo;
+    extended.myStatus = 'None';
+
+    if (!currentUserId) return;
+
+    const reaction = extended.newestLikes.find(
+      (r) => r.userId === currentUserId,
+    );
+
+    if (reaction) {
+      extended.myStatus = reaction.status;
+    }
+  }
+
+  updateLikeStatus(userId: string, login: string, status: LikeStatus): void {
+    const likesInfo = this.extendedLikesInfo;
+
+    const existingIndex = likesInfo.newestLikes.findIndex(
+      (l) => l.userId === userId,
+    );
+    let prevStatus: LikeStatus = 'None';
+    if (existingIndex !== -1)
+      prevStatus = likesInfo.newestLikes[existingIndex].status;
+
+    if (prevStatus === status) return;
+
+    // удаляем старый статус
+    if (existingIndex !== -1) {
+      if (prevStatus === 'Like') likesInfo.likesCount--;
+      if (prevStatus === 'Dislike') likesInfo.dislikesCount--;
+      likesInfo.newestLikes.splice(existingIndex, 1);
+    }
+
+    // добавляем новый статус
+    if (status === 'Like') {
+      likesInfo.likesCount++;
+      likesInfo.newestLikes.push({
+        userId,
+        login,
+        addedAt: new Date(),
+        status,
+      });
+    }
+
+    if (status === 'Dislike') {
+      likesInfo.dislikesCount++;
+      likesInfo.newestLikes.push({
+        userId,
+        login,
+        addedAt: new Date(),
+        status: 'Dislike',
+      });
+    }
+
+    likesInfo.newestLikes.sort(
+      (a, b) => b.addedAt.getTime() - a.addedAt.getTime(),
+    );
+  }
 }
 
 export const PostSchema = SchemaFactory.createForClass(Post);
-
 PostSchema.loadClass(Post);
 
 export type PostDocument = HydratedDocument<Post>;
-
 export type PostModelType = Model<PostDocument> & typeof Post;
