@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
+import { HydratedDocument, Model } from 'mongoose';
 import { LikeStatus } from '../../../../core/types/like-status.type';
 
 @Schema({ timestamps: { createdAt: true, updatedAt: false } })
@@ -7,8 +7,8 @@ export class Comment {
   @Prop({ type: String, required: true })
   content: string;
 
-  @Prop({ type: Types.ObjectId, required: true })
-  postId: Types.ObjectId;
+  @Prop({ type: String, required: true })
+  postId: string;
 
   @Prop({ type: String, required: true })
   userId: string;
@@ -39,10 +39,10 @@ export class Comment {
   createdAt: Date;
 
   static createInstance(
-    postId: Types.ObjectId,
-    content: string,
+    postId: string,
     userId: string,
     userLogin: string,
+    content: string,
   ): CommentDocument {
     const comment = new this() as CommentDocument;
 
@@ -61,4 +61,7 @@ export class Comment {
 }
 
 export const CommentSchema = SchemaFactory.createForClass(Comment);
+CommentSchema.loadClass(Comment);
+
 export type CommentDocument = HydratedDocument<Comment>;
+export type CommentModelType = Model<CommentDocument> & typeof Comment;

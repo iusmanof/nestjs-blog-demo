@@ -27,6 +27,14 @@ import { GetPostsForBlogQueryHandler } from './blogs/application/queries/get-pos
 import CommentsQueryRepository from './posts/infra/comments.query-repository';
 import { Comment, CommentSchema } from './posts/domain/comment.entity';
 import { UpdateLikeStatusUseCase } from './posts/application/use-cases/update-like-status.usecase';
+import { CreateCommentForPostUseCase } from './posts/application/use-cases/create-comment-for-post.usecase';
+import { GetCommentsByPostIdQueryHandler } from './posts/application/queries/get-comments-by-post-id.query-handler';
+import CommentsRepository from './posts/infra/comment.repository';
+import { UpdateCommentLikeStatusUseCase } from './posts/application/use-cases/update-comment-like-status.usecase';
+import { UpdateCommentUseCase } from './posts/application/use-cases/update-comment.usecase';
+import { GetCommentByIdQueryHandler } from './posts/application/queries/get-comment-by-id.query-handler';
+import CommentsController from './posts/api/comments.controller';
+import { DeleteCommentUseCase } from './posts/application/use-cases/delete-comment.usecase';
 
 const repositories = [
   BlogsRepository,
@@ -34,6 +42,7 @@ const repositories = [
   PostsRepository,
   PostsQueryRepository,
   CommentsQueryRepository,
+  CommentsRepository,
 ];
 const useCases = [
   CreateBlogUseCase,
@@ -44,6 +53,10 @@ const useCases = [
   DeletePostUseCase,
   CreatePostForBlogUseCase,
   UpdateLikeStatusUseCase,
+  CreateCommentForPostUseCase,
+  UpdateCommentLikeStatusUseCase,
+  UpdateCommentUseCase,
+  DeleteCommentUseCase,
 ];
 const handlers = [
   GetBlogByIdQueryHandler,
@@ -51,9 +64,10 @@ const handlers = [
   GetPostByIdQueryHandler,
   GetPostQueryHandler,
   GetPostsForBlogQueryHandler,
+  GetCommentsByPostIdQueryHandler,
+  GetCommentByIdQueryHandler,
 ];
 const services = [BlogsService, PostsService];
-// Регистрируем провайдеры всех сущностей блоггерской платформы (blogs, posts, comments, etc...)
 @Module({
   imports: [
     CqrsModule,
@@ -62,8 +76,8 @@ const services = [BlogsService, PostsService];
     MongooseModule.forFeature([{ name: Comment.name, schema: CommentSchema }]),
     UserAccountsModule,
   ],
-  controllers: [BlogsController, PostsController],
+  controllers: [BlogsController, PostsController, CommentsController],
   providers: [...repositories, ...services, ...useCases, ...handlers],
-  exports: [BlogsRepository, PostsRepository],
+  exports: [BlogsRepository, PostsRepository, CommentsRepository],
 })
 export class BloggersPlatformModule {}

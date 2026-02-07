@@ -30,6 +30,8 @@ import { JwtAuthGuard } from '../../../../core/guards/bearer/jwt-auth.guard';
 import type { AuthenticatedRequest } from '../../../../core/types/authenticated-request.interface';
 import { OptionalJwtAuthGuard } from '../../../../core/guards/optional-jwt-auth.guard';
 import { BasicAuthGuard } from '../../../../core/guards/basic/basic-auth.guard';
+import { CreateCommentForPostCommand } from '../application/use-cases/create-comment-for-post.usecase';
+import { CreateCommentDto } from './input-dto/create-comment.dto';
 
 @Controller('posts')
 class PostsController {
@@ -37,6 +39,35 @@ class PostsController {
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
   ) {}
+
+  // create route
+  @UseGuards(JwtAuthGuard)
+  @Post(':postId/comments')
+  @HttpCode(HttpStatus.CREATED)
+  async createCommentForPost(
+    @Param('postId') postId: string,
+    @Body() dto: CreateCommentDto,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<CommentViewDto> {
+    const userId = req.user?.id;
+    const login = req.user?.login;
+    return await this.commandBus.execute(
+      new CreateCommentForPostCommand(postId, userId, login, dto),
+    );
+  }
+
+  // create route
+  @UseGuards(JwtAuthGuard)
+  @Get(':postId/comments')
+  @HttpCode(HttpStatus.OK)
+  async getCommentForPost(
+    @Param('postId') postId: string,
+    @Query() query: CommentsQueryParamsDto,
+  ): Promise<CommentViewDto> {
+    return await this.queryBus.execute(
+      new GetCommentsByPostIdQuery(postId, query),
+    );
+  }
 
   @UseGuards(BasicAuthGuard)
   @Post()
@@ -56,17 +87,6 @@ class PostsController {
   ): Promise<PostViewDto> {
     const userId = req.user?.id;
     return this.queryBus.execute(new GetPostByIdQuery(id, userId));
-  }
-
-  @Get(':postId/comments')
-  @HttpCode(HttpStatus.OK)
-  async getCommentsForPost(
-    @Param('postId') postId: string,
-    @Query() query: CommentsQueryParamsDto,
-  ): Promise<CommentViewDto> {
-    return await this.queryBus.execute(
-      new GetCommentsByPostIdQuery(postId, query),
-    );
   }
 
   @UseGuards(OptionalJwtAuthGuard)
@@ -89,6 +109,7 @@ class PostsController {
   ): Promise<PostViewDto> {
     return this.commandBus.execute(new UpdatePostCommand(id, dto));
   }
+
   @UseGuards(BasicAuthGuard)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
