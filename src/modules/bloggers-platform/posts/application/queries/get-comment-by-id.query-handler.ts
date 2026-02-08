@@ -4,25 +4,41 @@ import {
   Extension,
 } from '../../../../../core/exceptions/filters/domain-exceptions';
 import { DomainExceptionCode } from '../../../../../core/exceptions/filters/domain-exception-codes';
+import CommentsQueryRepository from '../../infra/comments.query-repository';
+import { CommentViewDto } from '../../api/view-dto/comment-view.dto';
 
 export class GetCommentByIdQuery {
-  constructor(public commentId: string) {}
+  constructor(
+    public commentId: string,
+    public userId: string,
+  ) {}
 }
 
 @QueryHandler(GetCommentByIdQuery)
-export class GetCommentByIdQueryHandler implements IQueryHandler<GetCommentByIdQuery> {
-  constructor() {}
+export class GetCommentByIdQueryHandler implements IQueryHandler<
+  GetCommentByIdQuery,
+  CommentViewDto
+> {
+  constructor(
+    private readonly commentsQueryRepository: CommentsQueryRepository,
+  ) {}
 
-  execute(query: GetCommentByIdQuery): Promise<any> {
-    throw new DomainException({
-      code: DomainExceptionCode.NotFound,
-      message: `Comment not found ${query.commentId}`,
-      extensions: [
-        new Extension(
-          'Comment with given id does not exist',
-          `${query.commentId}`,
-        ),
-      ],
-    });
+  async execute(query: GetCommentByIdQuery): Promise<CommentViewDto> {
+    const comment = await this.commentsQueryRepository.findById(
+      query.commentId,
+    );
+
+    if (!comment) {
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        message: `Comment not found`,
+        extensions: [new Extension('Comment not found', 'commentId')],
+      });
+    }
+
+    // ??? Может ли QueryRep работать с entity   (myStatus)  Другой пример commentViewDto !!!
+    const myStatus = comment.getMyStatus(query.userId);
+
+    return CommentViewDto.mapToViewWithCurrentStatus(comment, myStatus);
   }
 }

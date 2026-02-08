@@ -23,11 +23,6 @@ export class BasicAuthGuard implements CanActivate {
       return true;
     }
 
-    // if (!authHeader || !authHeader.startsWith('Basic ')) {
-    //   throw new UnauthorizedException(
-    //     'Authorization header missing or invalid',
-    //   );
-    // }
     if (!authHeader || !authHeader.startsWith('Basic ')) {
       throw new DomainException({
         code: DomainExceptionCode.Unauthorized,
@@ -42,7 +37,6 @@ export class BasicAuthGuard implements CanActivate {
     const [username, password] = credentials.split(':');
 
     if (username !== this.validUsername || password !== this.validPassword) {
-      // throw new UnauthorizedException('Invalid credentials');
       throw new DomainException({
         code: DomainExceptionCode.Unauthorized,
         message: 'Invalid credentials',

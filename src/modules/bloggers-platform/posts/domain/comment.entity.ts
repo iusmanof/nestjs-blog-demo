@@ -35,6 +35,9 @@ export class Comment {
     myStatus: LikeStatus;
   };
 
+  @Prop({ type: [{ userId: String, status: String }] })
+  likes: { userId: string; status: LikeStatus }[];
+
   @Prop()
   createdAt: Date;
 
@@ -57,6 +60,41 @@ export class Comment {
     };
 
     return comment;
+  }
+
+  getMyStatus(userId?: string): LikeStatus {
+    if (!userId) {
+      return 'None';
+    }
+
+    const userLike = this.likes?.find((like) => like.userId === userId);
+    return userLike ? userLike.status : 'None';
+  }
+
+  updateContent(content: string) {
+    this.content = content;
+  }
+
+  updateLikeStatus(userId: string, newStatus: LikeStatus) {
+    if (!userId) return;
+    if (!this.likes) this.likes = [];
+
+    const existing = this.likes?.find((like) => like.userId === userId);
+
+    if (existing) {
+      if (existing.status === newStatus) return;
+      existing.status = newStatus;
+    } else {
+      this.likes.push({ userId, status: newStatus });
+    }
+
+    this.likesInfo.likesCount = this.likes.filter(
+      (like) => like.status === 'Like',
+    ).length;
+    this.likesInfo.dislikesCount = this.likes.filter(
+      (like) => like.status === 'Dislike',
+    ).length;
+    this.likesInfo.myStatus = this.getMyStatus(userId);
   }
 }
 

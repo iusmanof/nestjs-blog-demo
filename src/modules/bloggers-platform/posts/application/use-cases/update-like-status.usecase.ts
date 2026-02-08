@@ -31,12 +31,12 @@ export class UpdateLikeStatusUseCase implements ICommandHandler<UpdateLikeStatus
 
     const post = await this.postsQueryRepository.findById(command.postId);
     if (!post) {
-      // throw new NotFoundException('Post not found');
       throw new DomainException({
         code: DomainExceptionCode.NotFound,
         message: 'Post not found',
       });
     }
+
     return await this.postsRepository.setLikeStatus(
       command.userId,
       command.postId,

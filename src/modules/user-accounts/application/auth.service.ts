@@ -43,12 +43,6 @@ class AuthService {
 
     return { id: user.id.toString(), login: user.login };
   }
-
-  // async login(userId: string) {
-  //   return Promise.resolve({
-  //     accessToken: this.jwtService.sign({ id: userId }),
-  //   });
-  // }
 }
 
 export default AuthService;

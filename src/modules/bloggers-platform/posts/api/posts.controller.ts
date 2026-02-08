@@ -40,35 +40,6 @@ class PostsController {
     private readonly queryBus: QueryBus,
   ) {}
 
-  // create route
-  @UseGuards(JwtAuthGuard)
-  @Post(':postId/comments')
-  @HttpCode(HttpStatus.CREATED)
-  async createCommentForPost(
-    @Param('postId') postId: string,
-    @Body() dto: CreateCommentDto,
-    @Req() req: AuthenticatedRequest,
-  ): Promise<CommentViewDto> {
-    const userId = req.user?.id;
-    const login = req.user?.login;
-    return await this.commandBus.execute(
-      new CreateCommentForPostCommand(postId, userId, login, dto),
-    );
-  }
-
-  // create route
-  @UseGuards(JwtAuthGuard)
-  @Get(':postId/comments')
-  @HttpCode(HttpStatus.OK)
-  async getCommentForPost(
-    @Param('postId') postId: string,
-    @Query() query: CommentsQueryParamsDto,
-  ): Promise<CommentViewDto> {
-    return await this.queryBus.execute(
-      new GetCommentsByPostIdQuery(postId, query),
-    );
-  }
-
   @UseGuards(BasicAuthGuard)
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -115,6 +86,35 @@ class PostsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async deletePost(@Param('id') id: string): Promise<void> {
     return this.commandBus.execute(new DeletePostCommand(id));
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':postId/comments')
+  @HttpCode(HttpStatus.CREATED)
+  async createCommentForPost(
+    @Param('postId') postId: string,
+    @Body() dto: CreateCommentDto,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<CommentViewDto> {
+    const userId = req.user?.id;
+    const login = req.user?.login;
+    return await this.commandBus.execute(
+      new CreateCommentForPostCommand(postId, userId, login, dto),
+    );
+  }
+
+  @UseGuards(OptionalJwtAuthGuard)
+  @Get(':postId/comments')
+  @HttpCode(HttpStatus.OK)
+  async getCommentForPost(
+    @Param('postId') postId: string,
+    @Req() req: AuthenticatedRequest,
+    @Query() query: CommentsQueryParamsDto,
+  ): Promise<CommentViewDto> {
+    const userId = req.user?.id;
+    return await this.queryBus.execute(
+      new GetCommentsByPostIdQuery(postId, userId, query),
+    );
   }
 
   @UseGuards(JwtAuthGuard)

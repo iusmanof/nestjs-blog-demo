@@ -9,6 +9,7 @@ import { DomainExceptionCode } from '../../../../../core/exceptions/filters/doma
 export class GetCommentsByPostIdQuery {
   constructor(
     public postId: string,
+    public userId: string,
     public queryParams: CommentsQueryParamsDto,
   ) {}
 }
@@ -20,10 +21,9 @@ export class GetCommentsByPostIdQueryHandler implements IQueryHandler<GetComment
     private readonly postsQueryRepository: PostsQueryRepository,
   ) {}
 
-  async execute({ postId, queryParams }: GetCommentsByPostIdQuery) {
+  async execute({ postId, queryParams, userId }: GetCommentsByPostIdQuery) {
     const post = await this.postsQueryRepository.findById(postId);
     if (!post) {
-      // throw new NotFoundException('Post not found');
       throw new DomainException({
         code: DomainExceptionCode.NotFound,
         message: 'Post not found',
@@ -38,7 +38,9 @@ export class GetCommentsByPostIdQueryHandler implements IQueryHandler<GetComment
       page: queryParams.pageNumber,
       pageSize: queryParams.pageSize,
       totalCount,
-      items: items.map(CommentViewDto.mapToView),
+      items: items.map((comment) =>
+        CommentViewDto.mapToViewWithUser(comment, userId),
+      ),
     };
   }
 }

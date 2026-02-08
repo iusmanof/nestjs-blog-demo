@@ -12,6 +12,11 @@ class CommentsQueryRepository {
     private readonly commentModel: Model<CommentDocument>,
   ) {}
 
+  findById(commentId: string) {
+    return this.commentModel.findOne({ _id: commentId });
+  }
+
+  // REFACTOR ADD : Promise<CommentDocument>
   async getByPostId(postId: string, query: CommentsQueryParamsDto) {
     const filter = { postId };
 

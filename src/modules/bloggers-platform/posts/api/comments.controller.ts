@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Param,
   Put,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
@@ -17,6 +18,9 @@ import { UpdateCommentCommand } from '../application/use-cases/update-comment.us
 import { UpdateCommentDto } from './input-dto/update-comment.dto';
 import { DeleteCommentCommand } from '../application/use-cases/delete-comment.usecase';
 import { GetCommentByIdQuery } from '../application/queries/get-comment-by-id.query-handler';
+import { CommentViewDto } from './view-dto/comment-view.dto';
+import type { AuthenticatedRequest } from '../../../../core/types/authenticated-request.interface';
+import { OptionalJwtAuthGuard } from '../../../../core/guards/optional-jwt-auth.guard';
 
 @Controller('comments')
 class CommentsController {
@@ -30,10 +34,12 @@ class CommentsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async updateCommentLikeStatus(
     @Param('commentId') commentId: string,
+    @Req() req: AuthenticatedRequest,
     @Body() dto: UpdateCommentLikeStatusDto,
   ): Promise<void> {
+    const userId = req.user.id;
     return this.commandBus.execute(
-      new UpdateCommentLikeStatusCommand(commentId, dto),
+      new UpdateCommentLikeStatusCommand(commentId, userId, dto),
     );
   }
 
@@ -42,22 +48,35 @@ class CommentsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async updateComment(
     @Param('commentId') commentId: string,
+    @Req() req: AuthenticatedRequest,
     @Body() dto: UpdateCommentDto,
   ): Promise<void> {
-    return this.commandBus.execute(new UpdateCommentCommand(commentId, dto));
+    const userId = req.user.id;
+    return this.commandBus.execute(
+      new UpdateCommentCommand(commentId, userId, dto),
+    );
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(':commentId')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteComment(@Param('commentId') commentId: string): Promise<any> {
-    return this.commandBus.execute(new DeleteCommentCommand(commentId));
+  async deleteComment(
+    @Param('commentId') commentId: string,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<void> {
+    const userId = req.user.id;
+    return this.commandBus.execute(new DeleteCommentCommand(commentId, userId));
   }
 
+  @UseGuards(OptionalJwtAuthGuard)
   @Get(':commentId')
   @HttpCode(HttpStatus.OK)
-  async getCommentById(@Param('commentId') commentId: string): Promise<any> {
-    return this.queryBus.execute(new GetCommentByIdQuery(commentId));
+  async getCommentById(
+    @Param('commentId') commentId: string,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<CommentViewDto> {
+    const userId = req.user.id;
+    return this.queryBus.execute(new GetCommentByIdQuery(commentId, userId));
   }
 }
 
