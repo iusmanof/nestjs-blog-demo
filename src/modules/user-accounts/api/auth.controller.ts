@@ -80,6 +80,16 @@ export class AuthController {
     );
   }
 
+  @Post('logout')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async logoutSession(): Promise<void> {}
+
+  @Post('refresh-token\n')
+  @HttpCode(HttpStatus.OK)
+  refreshSession(@Body() body: { accessToken: string }): void {
+    void body.accessToken;
+  }
+
   @Get('me')
   @UseGuards(JwtAuthGuard)
   async getMe(
