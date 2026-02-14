@@ -81,6 +81,8 @@ class BlogsController {
   }
 
   @UseGuards(OptionalJwtAuthGuard)
+  // @UseGuards(OptionalJwtAuthGuard) REFACTOR LATER попробовать перейти на лругую реализцию
+  // OptionalJwtAuthGuard
   @Get(':blogId/posts')
   @HttpCode(HttpStatus.OK)
   getAllPostsForBlog(

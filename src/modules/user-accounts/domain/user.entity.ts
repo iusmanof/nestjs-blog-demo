@@ -24,6 +24,7 @@ export class User {
   })
   passwordHash: string;
 
+  // в отдельную схему
   @Prop({ type: String, required: true, unique: true })
   email: string;
   createdAt: Date;

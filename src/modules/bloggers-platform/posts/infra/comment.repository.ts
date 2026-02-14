@@ -44,7 +44,6 @@ class CommentsRepository {
     if (!entity) return false;
 
     entity.updateLikeStatus(userId, likeStatus);
-    // ??? save метод делать в entity
     // entity.saveInstance(commentModel) { commentModel.save() }
 
     await entity.save();

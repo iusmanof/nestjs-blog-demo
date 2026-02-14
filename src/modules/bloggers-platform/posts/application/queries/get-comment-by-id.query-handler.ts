@@ -36,7 +36,6 @@ export class GetCommentByIdQueryHandler implements IQueryHandler<
       });
     }
 
-    // ??? Может ли QueryRep работать с entity   (myStatus)  Другой пример commentViewDto !!!
     const myStatus = comment.getMyStatus(query.userId);
 
     return CommentViewDto.mapToViewWithCurrentStatus(comment, myStatus);

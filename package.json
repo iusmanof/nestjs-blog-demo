@@ -19,8 +19,8 @@
     "test:cov": "cross-env NODE_ENV=testing jest --coverage",
     "test:debug": "cross-env NODE_ENV=testing node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "cross-env NODE_ENV=testing jest --config ./test/jest-e2e.json",
-    "localtunnel": "npx localtunnel --port 3000",
-    "ngrok": "npx ngrok http 3000"
+    "localtunnel": "npx localtunnel --port 5004",
+    "ngrok": "npx ngrok http 5004"
   },
   "dependencies": {
     "@nestjs-modules/mailer": "^2.0.2",

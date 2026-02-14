@@ -1,10 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import type { Response as ExpressResponse } from 'express';
 import { UserContextDto } from '../guards/dto/user-context.dto';
 import { CryptoService } from './crypto.service';
 import { UsersQueryRepository } from '../infra/users.query-repository';
 import { JwtService } from '@nestjs/jwt';
-import { COOKIE_OPTIONS } from '../cookie/auth-cookie.config';
 
 @Injectable()
 class AuthService {
@@ -14,10 +12,12 @@ class AuthService {
     private cryptoService: CryptoService,
   ) {}
 
-  setRefreshToken(res: ExpressResponse, token: string) {
-    res.cookie('refreshToken', token, COOKIE_OPTIONS);
-  }
+  // setRefreshToken(res: ExpressResponse, token: string) {
+  //     res.cookie('refreshToken', token, COOKIE_OPTIONS);
+  // }
 
+  // ??? вынести в useCase ?
+  // Сделать как ValidateService
   async validateUser(
     login: string,
     password: string,

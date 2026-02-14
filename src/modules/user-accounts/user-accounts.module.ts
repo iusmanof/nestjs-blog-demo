@@ -16,8 +16,6 @@ import { LocalStrategy } from './guards/local/local.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { NotificationModule } from '../notification/notification.module';
-import { ThrottlerGuard } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
 import { CoreModule } from '../../core/core.module';
 import { JwtStrategy } from '../../core/guards/bearer/jwt.stategy';
 import { CodeGeneratorService } from './application/code-generator.service';
@@ -32,6 +30,13 @@ import { RegistrationEmailResendingUseCase } from './application/use-cases/regis
 import { NewPasswordUseCase } from './application/use-cases/new-password.usecase';
 import { PasswordRecoveryUseCase } from './application/use-cases/password-recovery.usecase';
 import { GetUserByIdQueryHandler } from './application/queries/get-user-by-id.query-handler';
+import { RefreshSessionUseCase } from './application/use-cases/refresh-session.usecase';
+import { LogoutUseCase } from './application/use-cases/logout.usecase';
+import { SessionRepository } from './infra/session.repository';
+import { Session, SessionSchema } from './domain/session.entity';
+import { GetDevicesQueryHandler } from './application/queries/get-devices.query-handler';
+import { DeleteAllDevicesUseCase } from './application/use-cases/delete-all-devices.useacse';
+import { DeleteDeviceUseCase } from './application/use-cases/delete-device.command';
 
 const services = [
   UsersService,
@@ -44,6 +49,7 @@ const repositories = [
   UsersQueryRepository,
   UsersRepository,
   UsersExternalRepository,
+  SessionRepository,
 ];
 const strategies = [LocalStrategy, JwtStrategy];
 const useCases = [
@@ -55,8 +61,16 @@ const useCases = [
   RegistrationEmailResendingUseCase,
   NewPasswordUseCase,
   PasswordRecoveryUseCase,
+  RefreshSessionUseCase,
+  LogoutUseCase,
+  DeleteAllDevicesUseCase,
+  DeleteDeviceUseCase,
 ];
-const handlers = [GetUsersQueryHandler, GetUserByIdQueryHandler];
+const handlers = [
+  GetUsersQueryHandler,
+  GetUserByIdQueryHandler,
+  GetDevicesQueryHandler,
+];
 
 @Module({
   imports: [
@@ -66,17 +80,19 @@ const handlers = [GetUsersQueryHandler, GetUserByIdQueryHandler];
     ConfigModule,
     NotificationModule,
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    MongooseModule.forFeature([{ name: Session.name, schema: SessionSchema }]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('JWT_SECRET'),
+        secret: config.get<string>('ACCESS_TOKEN_SECRET'),
         // signOptions: {
-        //   expiresIn: '300s',
+        //   expiresIn: config.get<number>('ACCESS_TOKEN_EXPIRE_IN'),
         // },
       }),
     }),
   ],
+
   controllers: [UsersController, AuthController, SecurityDevicesController],
   providers: [
     ...services,
@@ -84,11 +100,12 @@ const handlers = [GetUsersQueryHandler, GetUserByIdQueryHandler];
     ...strategies,
     ...useCases,
     ...handlers,
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
   ],
-  exports: [JwtModule, UsersRepository, UsersExternalService],
+  exports: [
+    JwtModule,
+    UsersRepository,
+    UsersExternalService,
+    SessionRepository,
+  ],
 })
 export class UserAccountsModule {}
