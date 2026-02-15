@@ -79,15 +79,12 @@ export class AuthController {
   ) {
     const refreshToken = req.cookies?.refreshToken;
 
-    if (!refreshToken) {
-      throw new UnauthorizedException('Refresh token not found');
-    }
-
     const result: RefreshSession = await this.commandBus.execute(
-      new RefreshSessionCommand(refreshToken),
+      new RefreshSessionCommand(refreshToken!),
     );
 
     res.cookie('refreshToken', result.newRefreshToken, COOKIE_OPTIONS);
+    // res.clearCookie('refreshToken', COOKIE_OPTIONS); не прошли
 
     return { accessToken: result.accessToken };
   }

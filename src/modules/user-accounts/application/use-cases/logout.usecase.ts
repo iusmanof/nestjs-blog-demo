@@ -19,25 +19,36 @@ export class LogoutUseCase implements ICommandHandler<LogoutCommand> {
   async execute(command: LogoutCommand): Promise<void> {
     const { refreshToken } = command;
 
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token not found in cookie');
+    }
+
     let payload: { userId: string; deviceId: string; iat: number };
     try {
-      payload = this.jwtService.verify(refreshToken, {
+      payload = this.jwtService.verify<{
+        userId: string;
+        deviceId: string;
+        iat: number;
+      }>(refreshToken, {
         secret: this.configService.get<string>('REFRESH_TOKEN_SECRET'),
       });
     } catch {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
-    console.log('Logout refresh token:', refreshToken);
+
     const session = await this.sessionRepository.findByDeviceId(
       payload.deviceId,
     );
-    console.log('Session to delete:', session);
     if (!session || session.userId !== payload.userId) {
       throw new UnauthorizedException('Session not found');
     }
 
-    // Удаляем сессию — токен становится недействительным
+    if (session.isRevoked) {
+      throw new UnauthorizedException('Token already revoked');
+    }
+    session.isRevoked = true;
+    await session.save();
+
     await this.sessionRepository.deleteByDeviceId(payload.deviceId);
-    console.log('Session deleted');
   }
 }

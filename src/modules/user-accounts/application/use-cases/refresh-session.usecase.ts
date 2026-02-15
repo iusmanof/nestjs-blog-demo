@@ -22,11 +22,18 @@ export class RefreshSessionUseCase implements ICommandHandler<RefreshSessionComm
   async execute(command: RefreshSessionCommand): Promise<RefreshSession> {
     const { refreshToken } = command;
 
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token not found in cookie');
+    }
+
     let payload: { deviceId: string; userId: string };
     try {
-      payload = this.jwtService.verify(refreshToken, {
-        secret: this.configService.get<string>('REFRESH_TOKEN_SECRET'),
-      });
+      payload = this.jwtService.verify<{ deviceId: string; userId: string }>(
+        refreshToken,
+        {
+          secret: this.configService.get<string>('REFRESH_TOKEN_SECRET'),
+        },
+      );
     } catch {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
@@ -34,50 +41,46 @@ export class RefreshSessionUseCase implements ICommandHandler<RefreshSessionComm
     const session = await this.sessionRepository.findByDeviceId(
       payload.deviceId,
     );
-    if (!session || session.userId !== payload.userId) {
+    if (!session || session.userId !== payload.userId)
       throw new UnauthorizedException('Session not found');
-    }
 
     if (session.expiresAt < new Date()) {
       throw new UnauthorizedException('Session expired');
     }
 
-    const user = await this.usersQueryRepository.findById(session.userId);
-    if (!user) throw new UnauthorizedException('User not found');
+    if (session.isRevoked) {
+      throw new UnauthorizedException('Token revoked');
+    }
 
-    // Генерация нового refresh токена
+    //
+    const user = await this.usersQueryRepository.findById(session.userId);
     const newRefreshToken = this.jwtService.sign(
-      { userId: user.id, deviceId: session.deviceId },
+      { userId: user!.id, deviceId: session.deviceId },
       {
         secret: this.configService.get<string>('REFRESH_TOKEN_SECRET'),
-        expiresIn: '15s',
+        expiresIn: '20s',
       },
     );
     const newHash = await bcrypt.hash(newRefreshToken, 10);
-    const decodedNew: any = this.jwtService.decode(newRefreshToken);
+    const decodedNew: { iat: number; exp: number } =
+      this.jwtService.decode(newRefreshToken);
     const lastActiveDate = new Date(decodedNew.iat * 1000);
     const expiresAt = new Date(decodedNew.exp * 1000);
 
-    // **атомарное обновление старого токена на новый**
-    const updated = await this.sessionRepository.useRefreshToken(
-      session.deviceId,
-      session.refreshTokenHash,
-      newHash,
-      lastActiveDate,
-      expiresAt,
-    );
-
-    if (!updated) {
-      throw new UnauthorizedException('Refresh token has already been used');
-    }
-
-    // Генерация access токена
     const accessToken = this.jwtService.sign(
-      { id: user.id },
+      { id: user!.id },
       {
         secret: this.configService.get<string>('ACCESS_TOKEN_SECRET'),
         expiresIn: '10s',
       },
+    );
+
+    await this.sessionRepository.useRefreshToken(
+      session.deviceId,
+      refreshToken,
+      newHash,
+      lastActiveDate,
+      expiresAt,
     );
 
     return { accessToken, newRefreshToken };

@@ -27,7 +27,6 @@ export class LoginUseCase implements ICommandHandler<LoginCommand> {
   ): Promise<{ accessToken: string; refreshToken: string }> {
     const deviceId = randomUUID();
 
-    // вынести используя useFactory
     const accessToken = this.jwtService.sign(
       { id: command.userId },
       {
@@ -36,7 +35,6 @@ export class LoginUseCase implements ICommandHandler<LoginCommand> {
       },
     );
 
-    // вынести используя useFactory
     const refreshToken = this.jwtService.sign(
       { userId: command.userId, deviceId },
       {

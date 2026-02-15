@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Session, SessionDocument } from '../domain/session.entity';
+import bcrypt from 'bcrypt';
 
 @Injectable()
 export class SessionRepository {
@@ -35,17 +36,29 @@ export class SessionRepository {
 
   async useRefreshToken(
     deviceId: string,
-    oldHash: string,
+    refreshToken: string,
     newHash: string,
     lastActiveDate: Date,
     expiresAt: Date,
-  ): Promise<boolean> {
-    const result = await this.sessionModel.updateOne(
-      { deviceId, refreshTokenHash: oldHash }, // фильтруем по старому hash
-      { $set: { refreshTokenHash: newHash, lastActiveDate, expiresAt } },
-    );
+  ): Promise<void> {
+    const session = await this.findByDeviceId(deviceId);
+    if (!session) throw new Error('Session not found');
 
-    return result.modifiedCount === 1;
+    const isValid = await bcrypt.compare(
+      refreshToken,
+      session.refreshTokenHash,
+    );
+    if (!isValid) {
+      session.isRevoked = true; // помечаем как взломанный
+      await session.save();
+      throw new UnauthorizedException('Refresh token reuse detected');
+    }
+
+    session.refreshTokenHash = newHash;
+    session.lastActiveDate = lastActiveDate;
+    session.expiresAt = expiresAt;
+    session.isRevoked = true;
+    await session.save();
   }
 
   async deleteByDeviceId(deviceId: string): Promise<void> {

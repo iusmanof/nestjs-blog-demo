@@ -19,6 +19,9 @@ export class Session {
   @Prop({ required: true })
   refreshTokenHash: string;
 
+  @Prop({ default: false })
+  isRevoked: boolean;
+
   @Prop({ type: Date, required: true })
   lastActiveDate: Date;
 
