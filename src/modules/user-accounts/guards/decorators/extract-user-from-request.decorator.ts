@@ -8,7 +8,6 @@ export const ExtractUserFromRequest = createParamDecorator(
     const request = ctx.switchToHttp().getRequest<{ user?: UserContextDto }>();
 
     if (!request.user) {
-      // throw new UnauthorizedException();
       throw new DomainException({
         code: DomainExceptionCode.Unauthorized,
         message: 'User is not unauthorized',

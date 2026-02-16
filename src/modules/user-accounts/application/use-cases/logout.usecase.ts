@@ -48,9 +48,6 @@ export class LogoutUseCase implements ICommandHandler<LogoutCommand> {
       throw new UnauthorizedException();
     }
 
-    // if (session.isRevoked) {
-    //   throw new UnauthorizedException('Token already revoked');
-    // }
     session.isRevoked = true;
     await session.save();
 

@@ -12,10 +12,6 @@ class AuthService {
     private cryptoService: CryptoService,
   ) {}
 
-  // setRefreshToken(res: ExpressResponse, token: string) {
-  //     res.cookie('refreshToken', token, COOKIE_OPTIONS);
-  // }
-
   // ??? вынести в useCase ?
   // Сделать как ValidateService
   async validateUser(

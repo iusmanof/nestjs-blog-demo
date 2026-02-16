@@ -49,7 +49,7 @@ export class SecurityDevicesController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteDevice(
     @Param('deviceId') deviceId: string,
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
   ): Promise<void> {
     const refreshToken = req.cookies?.refreshToken;
 
@@ -57,7 +57,6 @@ export class SecurityDevicesController {
       throw new UnauthorizedException('Refresh token missing');
     }
 
-    // передаём refreshToken + deviceId
     return this.commandBus.execute(
       new DeleteDeviceCommand(refreshToken, deviceId),
     );
