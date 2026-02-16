@@ -42,10 +42,15 @@ export class LogoutUseCase implements ICommandHandler<LogoutCommand> {
     if (!session || session.userId !== payload.userId) {
       throw new UnauthorizedException('Session not found');
     }
+    const tokenIatDate = new Date(payload.iat * 1000);
 
-    if (session.isRevoked) {
-      throw new UnauthorizedException('Token already revoked');
+    if (session.lastActiveDate.getTime() !== tokenIatDate.getTime()) {
+      throw new UnauthorizedException();
     }
+
+    // if (session.isRevoked) {
+    //   throw new UnauthorizedException('Token already revoked');
+    // }
     session.isRevoked = true;
     await session.save();
 
