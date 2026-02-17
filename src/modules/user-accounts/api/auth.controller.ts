@@ -84,7 +84,6 @@ export class AuthController {
     );
 
     res.cookie('refreshToken', result.newRefreshToken, COOKIE_OPTIONS);
-    // res.clearCookie('refreshToken', COOKIE_OPTIONS); не прошли
 
     return { accessToken: result.accessToken };
   }

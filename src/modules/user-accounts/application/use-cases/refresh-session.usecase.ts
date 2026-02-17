@@ -1,11 +1,15 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { ConfigService } from '@nestjs/config';
 import { UsersQueryRepository } from '../../infra/users.query-repository';
 import { SessionRepository } from '../../infra/session.repository';
-import { UnauthorizedException } from '@nestjs/common';
+import { Inject, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { RefreshSession } from '../../../../core/types/refresh-session.type';
 import bcrypt from 'bcrypt';
+import {
+  ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
+  REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
+} from '../../constants/auth-tokens.inject-constants';
+import { UserAccountsConfig } from '../../config/user-accounts.config';
 
 export class RefreshSessionCommand {
   constructor(public readonly refreshToken: string) {}
@@ -13,8 +17,11 @@ export class RefreshSessionCommand {
 @CommandHandler(RefreshSessionCommand)
 export class RefreshSessionUseCase implements ICommandHandler<RefreshSessionCommand> {
   constructor(
-    private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
+    @Inject(ACCESS_TOKEN_STRATEGY_INJECT_TOKEN)
+    private readonly accessJwt: JwtService,
+    @Inject(REFRESH_TOKEN_STRATEGY_INJECT_TOKEN)
+    private readonly refreshJwt: JwtService,
+    private readonly config: UserAccountsConfig,
     private readonly usersQueryRepository: UsersQueryRepository,
     private readonly sessionRepository: SessionRepository,
   ) {}
@@ -28,11 +35,9 @@ export class RefreshSessionUseCase implements ICommandHandler<RefreshSessionComm
 
     let payload: { deviceId: string; userId: string };
     try {
-      payload = this.jwtService.verify<{ deviceId: string; userId: string }>(
+      payload = this.refreshJwt.verify<{ deviceId: string; userId: string }>(
         refreshToken,
-        {
-          secret: this.configService.get<string>('REFRESH_TOKEN_SECRET'),
-        },
+        { secret: this.config.refreshTokenSecret },
       );
     } catch {
       throw new UnauthorizedException('Invalid or expired refresh token');
@@ -52,28 +57,18 @@ export class RefreshSessionUseCase implements ICommandHandler<RefreshSessionComm
       throw new UnauthorizedException('Token revoked');
     }
 
-    //
     const user = await this.usersQueryRepository.findById(session.userId);
-    const newRefreshToken = this.jwtService.sign(
-      { userId: user!.id, deviceId: session.deviceId },
-      {
-        secret: this.configService.get<string>('REFRESH_TOKEN_SECRET'),
-        expiresIn: '20s',
-      },
-    );
+    const newRefreshToken = this.refreshJwt.sign({
+      userId: user!.id,
+      deviceId: session.deviceId,
+    });
     const newHash = await bcrypt.hash(newRefreshToken, 10);
     const decodedNew: { iat: number; exp: number } =
-      this.jwtService.decode(newRefreshToken);
+      this.refreshJwt.decode(newRefreshToken);
     const lastActiveDate = new Date(decodedNew.iat * 1000);
     const expiresAt = new Date(decodedNew.exp * 1000);
 
-    const accessToken = this.jwtService.sign(
-      { id: user!.id },
-      {
-        secret: this.configService.get<string>('ACCESS_TOKEN_SECRET'),
-        expiresIn: '10s',
-      },
-    );
+    const accessToken = this.accessJwt.sign({ id: user!.id });
 
     await this.sessionRepository.useRefreshToken(
       session.deviceId,

@@ -1,8 +1,9 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 import { SessionRepository } from '../../infra/session.repository';
-import { UnauthorizedException } from '@nestjs/common';
+import { Inject, UnauthorizedException } from '@nestjs/common';
+import { REFRESH_TOKEN_STRATEGY_INJECT_TOKEN } from '../../constants/auth-tokens.inject-constants';
+import { UserAccountsConfig } from '../../config/user-accounts.config';
 
 export class LogoutCommand {
   constructor(public readonly refreshToken: string) {}
@@ -11,8 +12,9 @@ export class LogoutCommand {
 @CommandHandler(LogoutCommand)
 export class LogoutUseCase implements ICommandHandler<LogoutCommand> {
   constructor(
-    private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
+    @Inject(REFRESH_TOKEN_STRATEGY_INJECT_TOKEN)
+    private readonly refreshJwt: JwtService,
+    private readonly config: UserAccountsConfig,
     private readonly sessionRepository: SessionRepository,
   ) {}
 
@@ -25,12 +27,12 @@ export class LogoutUseCase implements ICommandHandler<LogoutCommand> {
 
     let payload: { userId: string; deviceId: string; iat: number };
     try {
-      payload = this.jwtService.verify<{
+      payload = this.refreshJwt.verify<{
         userId: string;
         deviceId: string;
         iat: number;
       }>(refreshToken, {
-        secret: this.configService.get<string>('REFRESH_TOKEN_SECRET'),
+        secret: this.config.refreshTokenSecret,
       });
     } catch {
       throw new UnauthorizedException('Invalid or expired refresh token');

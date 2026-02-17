@@ -9,12 +9,11 @@ import UsersController from './api/users.controller';
 import { AuthController } from './api/auth.controller';
 import UsersExternalRepository from './infra/users.external-repository';
 import UsersExternalService from './application/users.external-service';
-import { JwtModule } from '@nestjs/jwt';
-import AuthService from './application/auth.service';
+import { JwtService } from '@nestjs/jwt';
 import { CryptoService } from './application/crypto.service';
 import { LocalStrategy } from './guards/local/local.strategy';
 import { PassportModule } from '@nestjs/passport';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { NotificationModule } from '../notification/notification.module';
 import { CoreModule } from '../../core/core.module';
 import { JwtStrategy } from '../../core/guards/bearer/jwt.stategy';
@@ -37,13 +36,19 @@ import { Session, SessionSchema } from './domain/session.entity';
 import { GetDevicesQueryHandler } from './application/queries/get-devices.query-handler';
 import { DeleteAllDevicesUseCase } from './application/use-cases/delete-all-devices.useacse';
 import { DeleteDeviceUseCase } from './application/use-cases/delete-device.command';
+import { ValidateUserService } from './application/validate-user.service';
+import { UserAccountsConfig } from './config/user-accounts.config';
+import {
+  ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
+  REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
+} from './constants/auth-tokens.inject-constants';
 
 const services = [
   UsersService,
   UsersExternalService,
-  AuthService,
   CryptoService,
   CodeGeneratorService,
+  ValidateUserService,
 ];
 const repositories = [
   UsersQueryRepository,
@@ -81,20 +86,35 @@ const handlers = [
     NotificationModule,
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     MongooseModule.forFeature([{ name: Session.name, schema: SessionSchema }]),
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('ACCESS_TOKEN_SECRET'),
-        // signOptions: {
-        //   expiresIn: config.get<number>('ACCESS_TOKEN_EXPIRE_IN'),
-        // },
-      }),
-    }),
   ],
 
   controllers: [UsersController, AuthController, SecurityDevicesController],
   providers: [
+    UserAccountsConfig,
+    {
+      provide: ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
+      useFactory: (userAccountConfig: UserAccountsConfig): JwtService => {
+        return new JwtService({
+          secret: userAccountConfig.accessTokenSecret,
+          signOptions: {
+            expiresIn: userAccountConfig.accessTokenExpireIn,
+          },
+        });
+      },
+      inject: [UserAccountsConfig],
+    },
+    {
+      provide: REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
+      useFactory: (userAccountConfig: UserAccountsConfig): JwtService => {
+        return new JwtService({
+          secret: userAccountConfig.refreshTokenSecret,
+          signOptions: {
+            expiresIn: userAccountConfig.refreshTokenExpireIn,
+          },
+        });
+      },
+      inject: [UserAccountsConfig],
+    },
     ...services,
     ...repositories,
     ...strategies,
@@ -102,7 +122,8 @@ const handlers = [
     ...handlers,
   ],
   exports: [
-    JwtModule,
+    ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
+    REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
     UsersRepository,
     UsersExternalService,
     SessionRepository,

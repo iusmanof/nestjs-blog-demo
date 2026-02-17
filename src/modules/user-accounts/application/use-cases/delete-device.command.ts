@@ -3,10 +3,12 @@ import {
   NotFoundException,
   ForbiddenException,
   UnauthorizedException,
+  Inject,
 } from '@nestjs/common';
 import { SessionRepository } from '../../infra/session.repository';
-import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { REFRESH_TOKEN_STRATEGY_INJECT_TOKEN } from '../../constants/auth-tokens.inject-constants';
+import { UserAccountsConfig } from '../../config/user-accounts.config';
 
 export class DeleteDeviceCommand {
   constructor(
@@ -19,8 +21,9 @@ export class DeleteDeviceCommand {
 export class DeleteDeviceUseCase implements ICommandHandler<DeleteDeviceCommand> {
   constructor(
     private readonly sessionRepository: SessionRepository,
+    @Inject(REFRESH_TOKEN_STRATEGY_INJECT_TOKEN)
     private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
+    private readonly config: UserAccountsConfig,
   ) {}
 
   async execute(command: DeleteDeviceCommand): Promise<void> {
@@ -28,7 +31,7 @@ export class DeleteDeviceUseCase implements ICommandHandler<DeleteDeviceCommand>
 
     try {
       payload = this.jwtService.verify(command.refreshToken, {
-        secret: this.configService.get<string>('REFRESH_TOKEN_SECRET'),
+        secret: this.config.refreshTokenSecret,
       });
     } catch {
       throw new UnauthorizedException();

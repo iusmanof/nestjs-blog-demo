@@ -6,20 +6,22 @@ import { UserAccountsModule } from './modules/user-accounts/user-accounts.module
 import { TestingModule } from './testing/testing.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { CoreModule } from './core/core.module';
-import { AppConfigModule } from './app-config.module';
 import { MongooseConfigModule } from './mongoose-config.module';
+import { configModule } from './config-dynamic-module';
+import { CoreConfig } from './core/core.config';
 
 @Module({
   imports: [
-    AppConfigModule,
     MongooseConfigModule,
     BloggersPlatformModule,
     UserAccountsModule,
     TestingModule,
     NotificationModule,
     CoreModule,
+    configModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, CoreConfig],
+  exports: [CoreConfig],
 })
 export class AppModule {}

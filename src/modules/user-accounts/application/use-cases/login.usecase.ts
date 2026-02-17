@@ -1,10 +1,14 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 import { SessionRepository } from '../../infra/session.repository';
 import { randomUUID } from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { RefreshTokenPayload } from '../../../../core/types/refresh-token-payload.type';
+import { Inject } from '@nestjs/common';
+import {
+  ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
+  REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
+} from '../../constants/auth-tokens.inject-constants';
 
 export class LoginCommand {
   constructor(
@@ -17,8 +21,10 @@ export class LoginCommand {
 @CommandHandler(LoginCommand)
 export class LoginUseCase implements ICommandHandler<LoginCommand> {
   constructor(
-    private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
+    @Inject(ACCESS_TOKEN_STRATEGY_INJECT_TOKEN)
+    private readonly accessJwt: JwtService,
+    @Inject(REFRESH_TOKEN_STRATEGY_INJECT_TOKEN)
+    private readonly refreshJwt: JwtService,
     private readonly sessionRepository: SessionRepository,
   ) {}
 
@@ -27,25 +33,15 @@ export class LoginUseCase implements ICommandHandler<LoginCommand> {
   ): Promise<{ accessToken: string; refreshToken: string }> {
     const deviceId = randomUUID();
 
-    const accessToken = this.jwtService.sign(
-      { id: command.userId },
-      {
-        secret: this.configService.get('ACCESS_TOKEN_SECRET'),
-        expiresIn: '10s',
-      },
-    );
-
-    const refreshToken = this.jwtService.sign(
-      { userId: command.userId, deviceId },
-      {
-        secret: this.configService.get('REFRESH_TOKEN_SECRET'),
-        expiresIn: '20s',
-      },
-    );
+    const accessToken = this.accessJwt.sign({ id: command.userId });
+    const refreshToken = this.refreshJwt.sign({
+      userId: command.userId,
+      deviceId,
+    });
 
     const refreshTokenHash = await bcrypt.hash(refreshToken, 10);
 
-    const decoded: RefreshTokenPayload = this.jwtService.decode(refreshToken);
+    const decoded: RefreshTokenPayload = this.refreshJwt.decode(refreshToken);
 
     const lastActiveDate = new Date(decoded.iat * 1000);
 
